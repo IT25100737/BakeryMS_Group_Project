@@ -24,42 +24,42 @@
     <link th:href="@{/lib/animate/animate.min.css}" rel="stylesheet">
     <link th:href="@{/lib/owlcarousel/assets/owl.carousel.min.css}" rel="stylesheet">
 
-    <!-- Template Stylesheet -->
+    <!-- Customized Bootstrap Stylesheet -->
     <link th:href="@{/css/bootstrap.min.css}" rel="stylesheet">
-    <link th:href="@{/css/style.css}" rel="stylesheet">
 
-    <style>
-        /* Navbar User Actions Styling */
-        .btn-nav-auth {
-            background-color: var(--primary);
-            color: #ffffff;
-            border-radius: 50px;
-            padding: 8px 20px;
-            font-weight: 500;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            transition: 0.3s;
-            border: none;
-        }
-        .btn-nav-auth:hover {
-            background-color: #d9a400;
-            color: #ffffff;
-        }
-        .nav-item.dropdown .dropdown-menu {
-            border-radius: 10px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-            margin-top: 10px;
-        }
-    </style>
+    <!-- Template Stylesheet -->
+  <link th:href="@{/css/style.css}" rel="stylesheet">
+
+  <style>
+      /* Navbar User Actions Styling */
+      .btn-nav-auth {
+          background-color: var(--primary);
+          color: #ffffff;
+          border-radius: 50px;
+          padding: 8px 20px;
+          font-weight: 500;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          transition: 0.3s;
+          border: none;
+      }
+      .btn-nav-auth:hover {
+          background-color: #d9a400;
+          color: #ffffff;
+      }
+      .nav-item.dropdown .dropdown-menu {
+          border-radius: 10px;
+          box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+          margin-top: 10px;
+      }
+  </style>
 </head>
 
 <body>
-<!-- Spinner Start -->
 <div id="spinner" class="show bg-white position-fixed translate-middle w-100 vh-100 top-50 start-50 d-flex align-items-center justify-content-center">
-    <div class="spinner-grow text-primary" role="status"></div>
+  <div class="spinner-grow text-primary" role="status"></div>
 </div>
-<!-- Spinner End -->
 
 <!-- Top Bar Start -->
 <div class="container-fluid top-bar bg-dark text-light px-0 wow fadeIn" data-wow-delay="0.1s">
@@ -379,7 +379,6 @@
 </div>
 <!-- Copyright End -->
 
-<!-- Back to Top -->
 <a href="#" class="btn btn-lg btn-primary btn-lg-square rounded-circle back-to-top"><i class="bi bi-arrow-up"></i></a>
 
 <!-- JavaScript Libraries -->
@@ -390,6 +389,7 @@
 <script th:src="@{/lib/waypoints/waypoints.min.js}"></script>
 <script th:src="@{/lib/counterup/counterup.min.js}"></script>
 <script th:src="@{/lib/owlcarousel/owl.carousel.min.js}"></script>
+
 <!-- Template Javascript -->
 <script th:src="@{/js/main.js}"></script>
 </body>
