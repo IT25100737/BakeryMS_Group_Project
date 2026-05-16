@@ -30,4 +30,9 @@ public class OrderController {
     public String showProductPage() {
         return "products";
     }
+
+    @GetMapping("/custom-cake")
+    public String showCustomCakePage() {
+        return "custom-cake";
+    }
 }

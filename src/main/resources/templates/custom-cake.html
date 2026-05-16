@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+  <meta charset="utf-8">
+  <title>Baker - Custom Cake Design</title>
+  <meta content="width=device-width, initial-scale=1.0" name="viewport">
+
+  <link th:href="@{/img/favicon.ico}" rel="icon">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.10.0/css/all.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.4.1/font/bootstrap-icons.css" rel="stylesheet">
+
+  <link th:href="@{/lib/animate/animate.min.css}" rel="stylesheet">
+  <link th:href="@{/lib/owlcarousel/assets/owl.carousel.min.css}" rel="stylesheet">
+
+  <link th:href="@{/css/bootstrap.min.css}" rel="stylesheet">
+  <link th:href="@{/css/style.css}" rel="stylesheet">
+
+  <style>
+    .border-dashed { border-style: dashed !important; border-width: 2px !important; border-color: #dee2e6 !important; }
+    .color-circle { width: 40px; height: 40px; border-radius: 50%; border: 2px solid #ddd; cursor: pointer; display: inline-block; transition: 0.3s; }
+    .btn-check:checked + .color-circle { border-color: #000; transform: scale(1.2); }
+    .flavor-card { cursor: pointer; transition: 0.3s; border: 2px solid transparent; }
+    .btn-check:checked + .flavor-card { border-color: var(--primary); background-color: var(--light); }
+    .form-control, .form-select { color: #000 !important; font-weight: 500; }
+
+    /* Login/User Button Styles */
+    .btn-nav-user {
+      background-color: var(--primary);
+      color: #fff;
+      border-radius: 50px;
+      padding: 8px 25px;
+      font-weight: 500;
+      transition: 0.3s;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      border: none;
+    }
+    .btn-nav-user:hover {
+      background-color: #d9a400;
+      color: #fff;
+    }
+  </style>
+</head>
+
+<body>
+<div id="spinner" class="show bg-white position-fixed translate-middle w-100 vh-100 top-50 start-50 d-flex align-items-center justify-content-center">
+  <div class="spinner-grow text-primary" role="status"></div>
+</div>
+
+<!-- Navbar Start -->
+<nav class="navbar navbar-expand-lg navbar-dark fixed-top py-lg-0 px-lg-5 wow fadeIn" data-wow-delay="0.1s">
+  <a th:href="@{/}" class="navbar-brand ms-4 ms-lg-0">
+    <h1 class="text-primary m-0">Baker</h1>
+  </a>
+  <button type="button" class="navbar-toggler me-4" data-bs-toggle="collapse" data-bs-target="#navbarCollapse">
+    <span class="navbar-toggler-icon"></span>
+  </button>
+  <div class="collapse navbar-collapse" id="navbarCollapse">
+    <div class="navbar-nav mx-auto p-4 p-lg-0">
+      <a th:href="@{/}" class="nav-item nav-link">Home</a>
+      <a th:href="@{/about}" class="nav-item nav-link">About</a>
+      <a th:href="@{/service}" class="nav-item nav-link">Services</a>
+      <a th:href="@{/product}" class="nav-item nav-link">Products</a>
+      <a th:href="@{/custom-cake}" class="nav-item nav-link active">Custom Cake</a>
+      <a th:href="@{/contact}" class="nav-item nav-link">Contact</a>
+    </div>
+
+    <!-- Login / User Dropdown -->
+    <div class="d-none d-lg-flex ms-2">
+      <div th:if="${session.user == null}">
+        <a th:href="@{/login}" class="btn-nav-user">
+          <i class="fa fa-sign-in-alt"></i> Login
+        </a>
+      </div>
+      <div th:if="${session.user != null}" class="nav-item dropdown">
+        <a href="#" class="btn-nav-user dropdown-toggle" data-bs-toggle="dropdown">
+          <i class="fa fa-user"></i> <span th:text="${session.user.fullName}">User</span>
+        </a>
+        <div class="dropdown-menu dropdown-menu-end m-0">
+          <a th:href="@{/profile}" class="dropdown-item">My Profile</a>
+          <div class="dropdown-divider"></div>
+          <a th:href="@{/logout}" class="dropdown-item text-danger">Logout</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</nav>
+<!-- Navbar End -->
+
+<!-- Custom Cake Banner Start -->
+<div class="container-fluid custom-cake-header py-6 wow fadeIn"
+     data-wow-delay="0.1s">
+
+  <div class="container text-center position-relative z-2">
+
+    <h1 class="display-2 text-white animated slideInDown mb-4 shadow-text">
+      Custom Cake Design
+    </h1>
+
+    <nav aria-label="breadcrumb">
+
+      <ol class="breadcrumb justify-content-center mb-0">
+
+        <li class="breadcrumb-item">
+          <a class="text-white text-decoration-none"
+             th:href="@{/}">
+            Home
+          </a>
+        </li>
+
+        <li class="breadcrumb-item text-warning active"
+            aria-current="page">
+          Custom Cake
+        </li>
+
+      </ol>
+
+    </nav>
+
+  </div>
+
+</div>
+<!-- Custom Cake Banner End -->
+
+<style>
+
+  /* =========================
+ CUSTOM CAKE HEADER
+========================= */
+
+  .custom-cake-header{
+
+    position: relative;
+
+    background:
+            linear-gradient(rgba(0,0,0,0.40),
+            rgba(0,0,0,0.40)),
+
+            url('https://plus.unsplash.com/premium_photo-1717016931770-200946035121?w=1920&q=90&auto=format&fit=crop');
+
+    background-size: cover;
+    background-position: center center;
+    background-repeat: no-repeat;
+
+    min-height: 500px;
+    width: 100%;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    overflow: hidden;
+
+    filter: brightness(0.95) contrast(1.08);
+  }
+
+  /* Extra soft overlay */
+  .custom-cake-header::before{
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,0.18);
+  }
+
+  /* Keep content above overlay */
+  .z-2{
+    position: relative;
+    z-index: 2;
+  }
+
+  /* Main title */
+  .custom-cake-header h1{
+    font-weight: 700;
+    letter-spacing: 2px;
+  }
+
+  /* Text shadow */
+  .shadow-text{
+    text-shadow: 2px 4px 12px rgba(0,0,0,0.75);
+  }
+
+  /* Breadcrumb slash */
+  .breadcrumb-item + .breadcrumb-item::before{
+    content: "/";
+    color: rgba(255,255,255,0.8) !important;
+    padding-right: 10px;
+  }
+
+  /* Mobile Responsive */
+  @media (max-width: 768px){
+
+    .custom-cake-header{
+      min-height: 350px;
+    }
+
+    .custom-cake-header h1{
+      font-size: 45px;
+    }
+
+  }
+
+  @media (max-width: 576px){
+
+    .custom-cake-header h1{
+      font-size: 34px;
+    }
+
+  }
+
+</style>
+
+<div class="container-xxl py-6">
+  <div class="container">
+    <div class="text-center mx-auto mb-5 wow fadeInUp" data-wow-delay="0.1s" style="max-width: 600px;">
+      <p class="text-primary text-uppercase mb-2">// Tailor-Made Cakes</p>
+      <h1 class="display-6 mb-4">Design Your Dream Cake Step by Step</h1>
+    </div>
+
+    <div class="row justify-content-center">
+      <div class="col-lg-10">
+        <form th:action="@{/book-custom-cake}" method="post" enctype="multipart/form-data" class="bg-light rounded p-5 shadow">
+
+          <div class="mb-5 border-bottom pb-4">
+            <h4 class="mb-3 text-dark">1. Upload Your Cake Design</h4>
+            <div class="upload-box p-4 border border-dashed bg-white text-center rounded">
+              <i class="fa fa-cloud-upload-alt fa-3x text-primary mb-3"></i>
+              <input type="file" name="cakeDesign" class="form-control" accept="image/*" required>
+              <p class="mt-2 small text-muted">** Upload a picture or reference for your custom cake.</p>
+            </div>
+          </div>
+
+          <div class="mb-5 border-bottom pb-4">
+            <h4 class="mb-3 text-dark">2. Select Flavor</h4>
+            <div class="row g-3 text-center">
+              <div class="col-md-4">
+                <input type="radio" class="btn-check" name="flavor" id="flavor1" value="Chocolate" checked>
+                <label class="btn flavor-card bg-white w-100 p-3 rounded shadow-sm" for="flavor1">
+                  <img th:src="@{/img/chocolat.jpg}" class="img-fluid rounded mb-2" style="height: 80px;">
+                  <div class="fw-bold text-dark">Chocolate</div>
+                </label>
+              </div>
+              <div class="col-md-4">
+                <input type="radio" class="btn-check" name="flavor" id="flavor2" value="Ribbon">
+                <label class="btn flavor-card bg-white w-100 p-3 rounded shadow-sm" for="flavor2">
+                  <img th:src="@{/img/ribbon.jpg}" class="img-fluid rounded mb-2" style="height: 80px;">
+                  <div class="fw-bold text-dark">Ribbon</div>
+                </label>
+              </div>
+              <div class="col-md-4">
+                <input type="radio" class="btn-check" name="flavor" id="flavor3" value="Coffee">
+                <label class="btn flavor-card bg-white w-100 p-3 rounded shadow-sm" for="flavor3">
+                  <img th:src="@{/img/coffee.jpg}" class="img-fluid rounded mb-2" style="height: 80px;">
+                  <div class="fw-bold text-dark">Coffee</div>
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <div class="mb-5 border-bottom pb-4">
+            <h4 class="mb-3 text-dark">3. Cake Size</h4>
+            <div class="d-flex gap-3 flex-wrap">
+              <input type="radio" class="btn-check" name="size" id="size1" value="1KG" checked>
+              <label class="btn btn-outline-primary px-4 py-2" for="size1">1 KG</label>
+
+              <input type="radio" class="btn-check" name="size" id="size2" value="1.5KG">
+              <label class="btn btn-outline-primary px-4 py-2" for="size2">1.5 KG</label>
+
+              <input type="radio" class="btn-check" name="size" id="size3" value="2KG">
+              <label class="btn btn-outline-primary px-4 py-2" for="size3">2 KG</label>
+
+              <input type="radio" class="btn-check" name="size" id="size4" value="2.5KG">
+              <label class="btn btn-outline-primary px-4 py-2" for="size4">2.5 KG</label>
+            </div>
+          </div>
+
+          <div class="mb-5 border-bottom pb-4">
+            <div class="row g-4">
+              <div class="col-md-7">
+                <h4 class="mb-3 text-dark">4. Greeting to write on cake</h4>
+                <input type="text" name="greeting" class="form-control" placeholder="Enter your message here" maxlength="30">
+                <small class="text-muted">Limit this to 30 characters.</small>
+              </div>
+              <div class="col-md-5">
+                <h4 class="mb-3 text-dark">Greeting Color:</h4>
+                <div class="d-flex gap-2">
+                  <input type="radio" class="btn-check" name="gColor" id="c1" value="Yellow" checked>
+                  <label class="color-circle bg-warning" for="c1"></label>
+
+                  <input type="radio" class="btn-check" name="gColor" id="c2" value="Pink">
+                  <label class="color-circle" style="background-color: #ff4d6d;" for="c2"></label>
+
+                  <input type="radio" class="btn-check" name="gColor" id="c3" value="Blue">
+                  <label class="color-circle bg-primary" for="c3"></label>
+
+                  <input type="radio" class="btn-check" name="gColor" id="c4" value="Maroon">
+                  <label class="color-circle" style="background-color: #800000;" for="c4"></label>
+
+                  <input type="radio" class="btn-check" name="gColor" id="c5" value="Black">
+                  <label class="color-circle bg-dark" for="c5"></label>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="mb-5 border-bottom pb-4">
+            <h4 class="mb-3 text-dark">5. Additional Description</h4>
+            <div class="row">
+              <div class="col-12">
+                                <textarea name="description" class="form-control" rows="4"
+                                          placeholder="Enter any specific theme or extra details here... (e.g., specific shapes, floral borders, or character placements)"></textarea>
+                <small class="text-muted">Describe any extra details our bakers should know.</small>
+              </div>
+            </div>
+          </div>
+
+          <div class="mb-5 border-bottom pb-4">
+            <h4 class="mb-3 text-dark">6. Your Details</h4>
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label class="form-label">Email</label>
+                <input type="email" name="email" class="form-control" th:value="${session.user != null ? session.user.email : ''}" placeholder="Enter your email" required>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Mobile No</label>
+                <input type="text" name="mobile" class="form-control" th:value="${session.user != null ? session.user.mobile : ''}" placeholder="Enter your mobile number" required>
+              </div>
+            </div>
+          </div>
+
+          <div class="mb-4">
+            <h4 class="mb-3 text-dark">7. Delivery Details</h4>
+            <div class="d-flex gap-4 mb-3">
+              <div class="form-check">
+                <input class="form-check-input" type="radio" name="deliveryMethod" id="d1" value="Delivery" checked onchange="toggleAddress()">
+                <label class="form-check-label" for="d1">Get Delivered</label>
+              </div>
+              <div class="form-check">
+                <input class="form-check-input" type="radio" name="deliveryMethod" id="d2" value="Pickup" onchange="toggleAddress()">
+                <label class="form-check-label" for="d2">Pickup</label>
+              </div>
+            </div>
+
+            <div class="row g-3 mb-3" id="addressSection">
+              <div class="col-12">
+                <label class="form-label">Delivery Address <span class="text-danger">*</span></label>
+                <textarea name="address" class="form-control" rows="2" th:text="${session.user != null ? session.user.address : ''}" placeholder="Enter your full delivery address"></textarea>
+              </div>
+            </div>
+
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label class="form-label">Delivery City</label>
+                <select name="city" class="form-select">
+                  <option value="Colombo">Colombo</option>
+                  <option value="Kandy">Gampaha</option>
+                  <option value="Kandy">Badulla</option>
+                  <option value="Kandy">Matara</option>
+                  <option value="Kandy">Kandy</option>
+                  <option value="Kandy">Kandy</option>
+                  <option value="Galle">Galle</option>
+                  <option value="Negombo">Negombo</option>
+                </select>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Expected Delivery Date <span class="text-danger">*</span></label>
+                <input type="date" name="deliveryDate" class="form-control" required>
+              </div>
+            </div>
+          </div>
+
+          <button type="submit" class="btn btn-primary w-100 py-3 fs-5 mt-4">Place Custom Order</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Footer Start -->
+<div class="container-fluid bg-dark text-light footer my-6 mb-0 py-5 wow fadeIn" data-wow-delay="0.1s">
+  <div class="container py-5">
+    <div class="row g-5">
+      <div class="col-lg-3 col-md-6">
+        <h4 class="text-light mb-4">Office Address</h4>
+        <p class="mb-2"><i class="fa fa-map-marker-alt me-3"></i>123 Street,Colombo 07</p>
+        <p class="mb-2"><i class="fa fa-phone-alt me-3"></i>+011 258 695</p>
+        <p class="mb-2"><i class="fa fa-envelope me-3"></i>info@bakery.com</p>
+        <div class="d-flex pt-2">
+          <a class="btn btn-square btn-outline-light rounded-circle me-1" href=""><i class="fab fa-twitter"></i></a>
+          <a class="btn btn-square btn-outline-light rounded-circle me-1" href=""><i class="fab fa-facebook-f"></i></a>
+          <a class="btn btn-square btn-outline-light rounded-circle me-1" href=""><i class="fab fa-youtube"></i></a>
+          <a class="btn btn-square btn-outline-light rounded-circle me-0" href=""><i class="fab fa-linkedin-in"></i></a>
+        </div>
+      </div>
+      <div class="col-lg-3 col-md-6">
+        <h4 class="text-light mb-4">Quick Links</h4>
+        <a class="btn btn-link" href="/about">About Us</a>
+        <a class="btn btn-link" href="/service">Our Services</a>
+        <a class="btn btn-link" href="/product">Our product</a>
+        <a class="btn btn-link" href="custom-cake">Custom Cake</a>
+        <a class="btn btn-link" href="/contact">Contact Us</a>
+      </div>
+      <div class="col-lg-3 col-md-6">
+        <h4 class="text-light mb-4">Quick Links</h4>
+        <a class="btn btn-link" href="/about">About Us</a>
+        <a class="btn btn-link" href="/service">Our Services</a>
+        <a class="btn btn-link" href="/product">Our product</a>
+        <a class="btn btn-link" href="custom-cake">Custom Cake</a>
+        <a class="btn btn-link" href="/contact">Contact Us</a>
+      </div>
+      <div class="col-lg-3 col-md-6">
+        <h4 class="text-light mb-4">Photo Gallery</h4>
+        <div class="row g-2">
+          <div class="col-4">
+            <img class="img-fluid bg-light rounded p-1" src="img/product-001.jpg" alt="Image">
+          </div>
+          <div class="col-4">
+            <img class="img-fluid bg-light rounded p-1" src="img/product-02.jpg" alt="Image">
+          </div>
+          <div class="col-4">
+            <img class="img-fluid bg-light rounded p-1" src="img/product-003.jpg" alt="Image">
+          </div>
+          <div class="col-4">
+            <img class="img-fluid bg-light rounded p-1" src="img/product-02.jpg" alt="Image">
+          </div>
+          <div class="col-4">
+            <img class="img-fluid bg-light rounded p-1" src="img/product-003.jpg" alt="Image">
+          </div>
+          <div class="col-4">
+            <img class="img-fluid bg-light rounded p-1" src="img/product-001.jpg" alt="Image">
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- Footer End -->
+
+<!-- Copyright Start -->
+<div class="container-fluid copyright text-light py-4 wow fadeIn" data-wow-delay="0.1s">
+  <div class="container">
+    <div class="row">
+      <div class="col-md-6 text-center text-md-start mb-3 mb-md-0">
+        &copy; <a class="text-primary" th:href="@{/}">Baker Bakery</a>, All Right Reserved.
+      </div>
+      <div class="col-md-6 text-center text-md-end">
+        Designed By <a href="https://htmlcodex.com">HTML Codex</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Copyright End -->
+<a href="#" class="btn btn-lg btn-primary btn-lg-square rounded-circle back-to-top"><i class="bi bi-arrow-up"></i></a>
+
+<!-- JavaScript Libraries -->
+<script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
+<script th:src="@{/lib/wow/wow.min.js}"></script>
+<script th:src="@{/lib/easing/easing.min.js}"></script>
+<script th:src="@{/js/main.js}"></script>
+
+<script>
+  function toggleAddress() {
+    var deliveryRadio = document.getElementById("d1");
+    var addressSection = document.getElementById("addressSection");
+
+    if (deliveryRadio.checked) {
+      addressSection.style.display = "block";
+    } else {
+      addressSection.style.display = "none";
+    }
+  }
+
+  window.onload = toggleAddress;
+</script>
+
+</body>
+</html>
