@@ -16,6 +16,7 @@ import java.nio.file.Paths;
 import com.bakery.service.ProductService;
 
 
+
 import com.bakery.model.Order;
 import com.bakery.model.OrderItem;
 import org.springframework.ui.Model;
@@ -23,11 +24,14 @@ import java.util.ArrayList;
 import java.util.List;
 import com.bakery.service.OrderService;
 
+
+
 @Controller
 public class AdminController {
 
     @Autowired
     private ProductService productService;
+
 
     @Autowired
     private OrderService orderService;
@@ -96,6 +100,7 @@ public class AdminController {
     }
 
 
+
     //===== DELETE PRODUCT =====
     @GetMapping("/admin/delete-product/{name}")
     public String deleteProduct(@PathVariable String name, HttpSession session) {
@@ -105,6 +110,7 @@ public class AdminController {
         productService.deleteProduct(name);
         return "redirect:/admin";
     }
+
     // =================  (UPDATE STATUS) =================
     @PostMapping("/admin/update-order-status")
     public String updateOrderStatus(@RequestParam("orderIndex") int index,
