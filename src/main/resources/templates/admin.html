@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <title>Baker - Admin Products Dashboard</title>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.10.0/css/all.min.css" rel="stylesheet">
+
+    <style>
+        body { background-color: #f8f9fa; font-family: 'Roboto', sans-serif; scroll-behavior: smooth; }
+        .sidebar { height: 100vh; background: #2d2d2d; color: white; position: fixed; width: 250px; transition: 0.3s; z-index: 1000;}
+        .sidebar div h3 { color: #EAA636; }
+        .sidebar a { color: #adb5bd; text-decoration: none; padding: 15px 25px; display: block; border-bottom: 1px solid #3d3d3d; cursor: pointer; }
+        .sidebar a:hover { background: #3d3d3d; color: #EAA636; }
+        .sidebar a.active { color: #EAA636; border-left: 4px solid #EAA636; background: #3d3d3d; }
+        .content { margin-left: 250px; padding: 30px; }
+        .stat-card { border: none; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 25px;}
+        .product-img-preview { width: 50px; height: 50px; object-fit: cover; border-radius: 8px; border: 1px solid #ddd; }
+        .badge-category { background-color: #EAA636; color: white; font-weight: 500; border-radius: 5px; }
+        .badge-active { background-color: #198754; color: white; border-radius: 20px; }
+        .badge-inactive { background-color: #dc3545; color: white; border-radius: 20px; }
+
+        .admin-section { display: none; }
+        #product-section { display: block; }
+    </style>
+</head>
+<body>
+
+<div class="sidebar">
+    <div class="p-4 text-center">
+        <h3 class="m-0">Baker Admin</h3>
+    </div>
+    <a href="/admin#product-section" onclick="showSection('product-section', this)" class="nav-link-item active"><i class="fa fa-plus-circle me-2"></i> Add Product</a>
+    <a href="/admin#current-products" onclick="showSection('current-products', this)" class="nav-link-item"><i class="fa fa-bread-slice me-2"></i> View Products</a>
+    <a th:href="@{/}" class="mt-5 text-warning"><i class="fa fa-arrow-left me-2"></i> Back to Site</a>
+</div>
+
+<!-- Add Product -->
+<div id="product-section" class="admin-section card stat-card">
+    <div class="card-body p-4">
+        <h5 class="card-title mb-4 text-primary fw-bold"><i class="fa fa-plus-circle me-2"></i>Add New Product</h5>
+        <form th:action="@{/admin/add-product}" method="post" enctype="multipart/form-data">
+            <div class="row g-4">
+                <div class="col-md-12">
+                    <label class="form-label fw-bold">Product Name</label>
+                    <input type="text" name="name" class="form-control" placeholder="Enter Product Name" required>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-bold">Main Category</label>
+                    <select name="category" class="form-select" required>
+                        <option value="Cakes">Cakes</option>
+                        <option value="Pastries">Pastries</option>
+                        <option value="Desserts">Desserts</option>
+                        <option value="Others">Others</option>
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-bold">Sub Category</label>
+                    <input type="text" name="subCategory" class="form-control" placeholder="e.g. Chocolate" required>
+                </div>
+                <div class="col-12">
+                    <label class="form-label fw-bold">Description</label>
+                    <textarea name="description" class="form-control" rows="3"></textarea>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-bold">Price (Rs.)</label>
+                    <input type="number" step="0.01" name="price" class="form-control" required>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-bold">Quantity</label>
+                    <input type="number" name="quantity" class="form-control" required>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-bold">Image</label>
+                    <input type="file" name="imageFile" class="form-control" accept="image/*" required>
+                </div>
+                <div class="col-12 text-center border-top pt-4">
+                    <button type="submit" class="btn btn-primary px-5">Save Product</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- View Products -->
+<div id="current-products" class="admin-section card stat-card">
+    <div class="card-body p-4">
+        <h5 class="card-title mb-4 fw-bold">Current Product List</h5>
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead>
+                <tr>
+                    <th>Image</th>
+                    <th>Product Details</th>
+                    <th>Price</th>
+                    <th>Stock</th>
+                    <th>Status</th>
+                    <th class="text-center">Action</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="p : ${products}">
+                    <td><img th:src="@{'/img/' + ${p.image}}" class="product-img-preview shadow-sm"></td>
+                    <td>
+                        <div class="fw-bold" th:text="${p.name}">Name</div>
+                        <span class="badge badge-category" th:text="${p.category}"></span>
+                    </td>
+                    <td class="fw-bold text-primary">Rs. [[${p.price}]]</td>
+                    <td th:text="${p.quantity}">Qty</td>
+                    <td>
+                            <span th:class="${p.isActive ? 'badge badge-active' : 'badge badge-inactive'}"
+                                  th:text="${p.isActive ? 'Active' : 'Inactive'}"></span>
+                    </td>
+                    <td class="text-center">
+                        <button class="btn btn-sm btn-outline-warning border-0 me-2"
+                                th:attr="onclick=|openEditModal('${p.name}', '${p.price}', '${p.category}', '${p.subCategory}', '${p.description}', '${p.quantity}', ${p.isActive}, '${p.image}')|">
+                            <i class="fa fa-edit"></i>
+                        </button>
+                        <a th:href="@{'/admin/delete-product/' + ${p.name}}" class="btn btn-sm btn-outline-danger border-0" onclick="return confirm('Delete this product?')">
+                            <i class="fa fa-trash"></i>
+                        </a>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+<!-- View Orders Section -->
+<div id="order-section" class="admin-section card stat-card shadow-sm border-0" style="border-radius: 15px;">
+    <div class="card-body p-4">
+        <h5 class="card-title mb-4 fw-bold text-dark">Customer Orders</h5>
+        <div class="table-responsive">
+            <table class="table table-hover align-middle border-top" id="ordersTable">
+                <thead class="bg-light" id="tableHeader">
+                <tr>
+                    <th class="ps-3">Order ID</th>
+                    <th style="width: 30%;">Customer & Type</th>
+                    <th class="text-center">Status</th>
+                    <th class="text-center">Update</th>
+                    <th class="text-center">Action</th>
+                </tr>
+                </thead>
+                <tbody>
+                <th:block th:each="order, stat : ${orders}">
+                    <tr class="order-row" th:id="'mainRow' + ${stat.index}">
+                        <td class="ps-3 fw-bold text-primary" th:text="${order.orderId}">#0000</td>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <div class="me-3">
+                                    <div class="fw-bold mb-0 text-dark" th:text="${order.username}">User Name</div>
+                                    <span class="badge bg-light text-secondary border py-1" style="font-size: 0.7rem;" th:text="${order.type}">WEB ORDER</span>
+                                </div>
+                                <button class="btn btn-sm btn-light border rounded-circle shadow-sm"
+                                        type="button" th:onclick="'toggleOrderView(' + ${stat.index} + ')'">
+                                    <i class="fa fa-eye text-muted"></i>
+                                </button>
+                            </div>
+                        </td>
+                        <td class="text-center">
+                            <span th:if="${order.status == 'New'}" class="badge bg-warning text-dark px-3 py-2">New</span>
+                            <span th:if="${order.status == 'Accepted'}" class="badge bg-primary px-3 py-2">Accepted</span>
+                            <span th:if="${order.status == 'Pending'}" class="badge bg-info px-3 py-2 text-white">Pending</span>
+                            <span th:if="${order.status == 'Done'}" class="badge bg-success px-3 py-2 text-white">Completed</span>
+                        </td>
+                        <td class="text-center">
+                            <form th:action="@{/admin/update-order-status}" method="post">
+                                <input type="hidden" name="orderIndex" th:value="${order.index}">
+                                <input type="hidden" name="currentStatus" th:value="${order.status}">
+                                <button type="submit" class="btn btn-sm btn-dark px-3 fw-bold" th:if="${order.status == 'New'}">Accept</button>
+                                <button type="submit" class="btn btn-sm btn-secondary px-3 fw-bold" th:if="${order.status == 'Accepted'}">Pending</button>
+                                <button type="submit" class="btn btn-sm btn-info text-white px-3 fw-bold" th:if="${order.status == 'Pending'}">Done</button>
+                                <span th:if="${order.status == 'Done'}" class="text-success small fw-bold">Finished</span>
+                            </form>
+                        </td>
+                        <td class="text-center">
+                            <a th:href="@{'/admin/delete-order-record/' + ${order.index}}" class="btn btn-sm btn-outline-danger border-0" onclick="return confirm('Are you sure you want to delete this order??')">
+                                <i class="fa fa-trash"></i>
+                            </a>
+                        </td>
+                    </tr>
+
+                    <!-- (Isolated Detail Row) -->
+                    <tr class="detail-row d-none bg-white" th:id="'details' + ${stat.index}">
+                        <td colspan="5" class="p-4 border-0">
+                            <div class="card border-0 shadow-lg rounded-3" style="background: #fdfdfd;">
+                                <div class="card-header bg-white border-0 pt-3 px-4 d-flex justify-content-between align-items-center">
+                                    <h5 class="fw-bold m-0 text-dark">Order Details View</h5>
+                                    <button class="btn btn-sm btn-outline-secondary rounded-pill" th:onclick="'toggleOrderView(' + ${stat.index} + ')'">
+                                        <i class="fa fa-times me-1"></i> Close & Back
+                                    </button>
+                                </div>
+                                <div class="card-body p-4">
+                                    <div class="row mb-4">
+                                        <div class="col-md-6">
+                                            <h6 class="fw-bold text-muted small text-uppercase">Order ID:</h6>
+                                            <p class="h5 fw-bold text-primary" th:text="${order.orderId}">#0000</p>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <h6 class="fw-bold text-muted small text-uppercase">Delivery Address:</h6>
+                                            <p class="mb-0 text-dark fw-semibold" th:text="${order.address}">No Address Found</p>
+                                        </div>
+                                    </div>
+
+                                    <!-- Web Order Details -->
+                                    <div th:if="${order.type == 'WEB ORDER'}">
+                                        <table class="table table-sm table-borderless align-middle">
+                                            <thead class="border-bottom small text-muted text-uppercase">
+                                            <tr>
+                                                <th>Product Name</th>
+                                                <th class="text-center">Price</th>
+                                                <th class="text-center">Qty</th>
+                                                <th class="text-end">Subtotal</th>
+                                            </tr>
+                                            </thead>
+                                            <tbody>
+                                            <tr th:each="item : ${order.parsedItems}" class="border-bottom-dashed">
+                                                <td th:text="${item.name}" class="fw-bold py-3 text-dark">Cake Name</td>
+                                                <td class="text-center" th:text="${'Rs. ' + item.price}">Rs. 0.0</td>
+                                                <td class="text-center" th:text="${item.quantity}">1</td>
+                                                <td class="text-end fw-bold text-dark"
+                                                    th:text="${'Rs. ' + (T(java.lang.Double).parseDouble(item.price) * T(java.lang.Integer).parseInt(item.quantity))}">
+                                                    Rs. 0.0
+                                                </td>
+                                            </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+
+                                    <!-- Custom Cake View -->
+                                    <div th:if="${order.type == 'CUSTOM CAKE'}" class="row g-4">
+
+                                        <!-- 1. Custom Cake Image -->
+                                        <div class="col-md-5">
+                                            <div class="p-3 border rounded-4 bg-white shadow-sm text-center">
+                                                <small class="text-muted d-block mb-2 fw-bold text-uppercase">Reference Image</small>
+                                                <div th:if="${order.imageName != null and !order.imageName.empty}">
+                                                    <img th:src="@{'/img/custom_orders/' + ${order.imageName}}"
+                                                         class="img-fluid rounded-3 shadow-sm"
+                                                         style="max-height: 350px; width: 100%; object-fit: contain;"
+                                                         onerror="this.src='/img/default-cake.png'">
+                                                </div>
+                                                <div th:unless="${order.imageName != null and !order.imageName.empty}" class="py-5">
+                                                    <img src="/img/default-cake.png" class="img-fluid opacity-50" style="max-height: 150px;">
+                                                    <p class="text-muted mt-2">No reference image provided</p>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- 2. Custom Cake Details -->
+                                        <div class="col-md-7">
+                                            <div class="card border-0 bg-light p-4 rounded-4 shadow-sm">
+                                                <h5 class="fw-bold mb-3 border-bottom pb-2">Full Order Specifications</h5>
+                                                <div class="row mb-3">
+                                                    <div class="col-6">
+                                                        <small class="text-muted d-block">Flavor:</small>
+                                                        <span class="fw-bold text-dark" th:text="${order.flavor}">Chocolate</span>
+                                                    </div>
+                                                    <div class="col-6">
+                                                        <small class="text-muted d-block">Cake Size:</small>
+                                                        <span class="badge bg-primary px-3" th:text="${order.size}">1 KG</span>
+                                                    </div>
+                                                </div>
+
+                                                <div class="mb-3 p-2 bg-white rounded border-start border-warning border-4">
+                                                    <small class="text-muted d-block">Greeting on Cake:</small>
+                                                    <span class="fw-bold h6" th:text="${order.greeting}">Happy Birthday</span>
+                                                </div>
+
+                                                <div class="mb-3">
+                                                    <small class="text-muted d-block">Special Description/Theme:</small>
+                                                    <p class="text-dark bg-white p-2 rounded border" style="min-height: 60px; white-space: pre-line;"
+                                                       th:text="${order.specialDescription != null ? order.specialDescription : 'No extra description.'}">
+                                                    </p>
+                                                </div>
+
+                                                <div class="row">
+                                                    <div class="col-6">
+                                                        <small class="text-muted d-block">Contact No:</small>
+                                                        <span class="fw-bold" th:text="${order.mobile}">07x xxxxxxx</span>
+                                                    </div>
+                                                    <div class="col-6">
+                                                        <small class="text-muted d-block">Delivery Date:</small>
+                                                        <span class="fw-bold text-danger" th:text="${order.deliveryDate}">2026-05-10</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+
+                                    <!-- Total amount -->
+                                    <div class="text-end mt-4 border-top pt-3">
+                                        <small class="text-muted text-uppercase d-block" style="font-size: 0.75rem; letter-spacing: 1px;">Grand Total</small>
+                                        <h3 class="fw-bold text-warning mb-0" th:text="${order.total}">Rs. 0.0</h3>
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                </th:block>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+</div>
+
+<script>
+    function showSection(sectionId, element) {
+        // Hide all sections
+        document.querySelectorAll('.admin-section').forEach(sec => sec.style.display = 'none');
+
+        // Show selected section
+        document.getElementById(sectionId).style.display = 'block';
+
+        // Manage active class in links
+        document.querySelectorAll('.sidebar a').forEach(link => link.classList.remove('active'));
+        if(element) element.classList.add('active');
+
+        // Dynamically change page main title
+        const titles = {
+            'product-section': 'Add New Bakery Item',
+            'current-products': 'Bakery Product Inventory'
+        };
+        document.getElementById('section-title').innerText = titles[sectionId] || 'Admin Dashboard';
+    }
+
+    // Handle initial routing from URL Hash (e.g. /admin#current-products)
+    window.addEventListener('DOMContentLoaded', () => {
+        const hash = window.location.hash;
+        if (hash) {
+            const sectionId = hash.substring(1);
+            const targetLink = document.querySelector(`.sidebar a[href*="${hash}"]`);
+            if (document.getElementById(sectionId)) {
+                showSection(sectionId, targetLink);
+            }
+        }
+    });
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
