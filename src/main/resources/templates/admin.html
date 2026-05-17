@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <title>Baker - Admin Products Dashboard</title>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.10.0/css/all.min.css" rel="stylesheet">
+
+    <style>
+        body { background-color: #f8f9fa; font-family: 'Roboto', sans-serif; scroll-behavior: smooth; }
+        .sidebar { height: 100vh; background: #2d2d2d; color: white; position: fixed; width: 250px; transition: 0.3s; z-index: 1000;}
+        .sidebar div h3 { color: #EAA636; }
+        .sidebar a { color: #adb5bd; text-decoration: none; padding: 15px 25px; display: block; border-bottom: 1px solid #3d3d3d; cursor: pointer; }
+        .sidebar a:hover { background: #3d3d3d; color: #EAA636; }
+        .sidebar a.active { color: #EAA636; border-left: 4px solid #EAA636; background: #3d3d3d; }
+        .content { margin-left: 250px; padding: 30px; }
+        .stat-card { border: none; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 25px;}
+        .product-img-preview { width: 50px; height: 50px; object-fit: cover; border-radius: 8px; border: 1px solid #ddd; }
+        .badge-category { background-color: #EAA636; color: white; font-weight: 500; border-radius: 5px; }
+        .badge-active { background-color: #198754; color: white; border-radius: 20px; }
+        .badge-inactive { background-color: #dc3545; color: white; border-radius: 20px; }
+
+        .admin-section { display: none; }
+        #product-section { display: block; }
+    </style>
+</head>
+<body>
+
+<div class="sidebar">
+    <div class="p-4 text-center">
+        <h3 class="m-0">Baker Admin</h3>
+    </div>
+    <a href="/admin#product-section" onclick="showSection('product-section', this)" class="nav-link-item active"><i class="fa fa-plus-circle me-2"></i> Add Product</a>
+    <a href="/admin#current-products" onclick="showSection('current-products', this)" class="nav-link-item"><i class="fa fa-bread-slice me-2"></i> View Products</a>
+    <a th:href="@{/}" class="mt-5 text-warning"><i class="fa fa-arrow-left me-2"></i> Back to Site</a>
+</div>
+
+<!-- Add Product -->
+<div id="product-section" class="admin-section card stat-card">
+    <div class="card-body p-4">
+        <h5 class="card-title mb-4 text-primary fw-bold"><i class="fa fa-plus-circle me-2"></i>Add New Product</h5>
+        <form th:action="@{/admin/add-product}" method="post" enctype="multipart/form-data">
+            <div class="row g-4">
+                <div class="col-md-12">
+                    <label class="form-label fw-bold">Product Name</label>
+                    <input type="text" name="name" class="form-control" placeholder="Enter Product Name" required>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-bold">Main Category</label>
+                    <select name="category" class="form-select" required>
+                        <option value="Cakes">Cakes</option>
+                        <option value="Pastries">Pastries</option>
+                        <option value="Desserts">Desserts</option>
+                        <option value="Others">Others</option>
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-bold">Sub Category</label>
+                    <input type="text" name="subCategory" class="form-control" placeholder="e.g. Chocolate" required>
+                </div>
+                <div class="col-12">
+                    <label class="form-label fw-bold">Description</label>
+                    <textarea name="description" class="form-control" rows="3"></textarea>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-bold">Price (Rs.)</label>
+                    <input type="number" step="0.01" name="price" class="form-control" required>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-bold">Quantity</label>
+                    <input type="number" name="quantity" class="form-control" required>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-bold">Image</label>
+                    <input type="file" name="imageFile" class="form-control" accept="image/*" required>
+                </div>
+                <div class="col-12 text-center border-top pt-4">
+                    <button type="submit" class="btn btn-primary px-5">Save Product</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- View Products -->
+<div id="current-products" class="admin-section card stat-card">
+    <div class="card-body p-4">
+        <h5 class="card-title mb-4 fw-bold">Current Product List</h5>
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead>
+                <tr>
+                    <th>Image</th>
+                    <th>Product Details</th>
+                    <th>Price</th>
+                    <th>Stock</th>
+                    <th>Status</th>
+                    <th class="text-center">Action</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="p : ${products}">
+                    <td><img th:src="@{'/img/' + ${p.image}}" class="product-img-preview shadow-sm"></td>
+                    <td>
+                        <div class="fw-bold" th:text="${p.name}">Name</div>
+                        <span class="badge badge-category" th:text="${p.category}"></span>
+                    </td>
+                    <td class="fw-bold text-primary">Rs. [[${p.price}]]</td>
+                    <td th:text="${p.quantity}">Qty</td>
+                    <td>
+                            <span th:class="${p.isActive ? 'badge badge-active' : 'badge badge-inactive'}"
+                                  th:text="${p.isActive ? 'Active' : 'Inactive'}"></span>
+                    </td>
+                    <td class="text-center">
+                        <button class="btn btn-sm btn-outline-warning border-0 me-2"
+                                th:attr="onclick=|openEditModal('${p.name}', '${p.price}', '${p.category}', '${p.subCategory}', '${p.description}', '${p.quantity}', ${p.isActive}, '${p.image}')|">
+                            <i class="fa fa-edit"></i>
+                        </button>
+                        <a th:href="@{'/admin/delete-product/' + ${p.name}}" class="btn btn-sm btn-outline-danger border-0" onclick="return confirm('Delete this product?')">
+                            <i class="fa fa-trash"></i>
+                        </a>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+</div>
+
+<script>
+    function showSection(sectionId, element) {
+        // Hide all sections
+        document.querySelectorAll('.admin-section').forEach(sec => sec.style.display = 'none');
+
+        // Show selected section
+        document.getElementById(sectionId).style.display = 'block';
+
+        // Manage active class in links
+        document.querySelectorAll('.sidebar a').forEach(link => link.classList.remove('active'));
+        if(element) element.classList.add('active');
+
+        // Dynamically change page main title
+        const titles = {
+            'product-section': 'Add New Bakery Item',
+            'current-products': 'Bakery Product Inventory'
+        };
+        document.getElementById('section-title').innerText = titles[sectionId] || 'Admin Dashboard';
+    }
+
+    // Handle initial routing from URL Hash (e.g. /admin#current-products)
+    window.addEventListener('DOMContentLoaded', () => {
+        const hash = window.location.hash;
+        if (hash) {
+            const sectionId = hash.substring(1);
+            const targetLink = document.querySelector(`.sidebar a[href*="${hash}"]`);
+            if (document.getElementById(sectionId)) {
+                showSection(sectionId, targetLink);
+            }
+        }
+    });
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
