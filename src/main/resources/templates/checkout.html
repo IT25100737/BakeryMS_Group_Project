@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Order Payment</title>
+    <link th:href="@{/css/bootstrap.min.css}" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
+    <style>
+        body { background-color: #f8f9fa; font-family: 'Poppins', sans-serif; }
+        .payment-container { max-width: 950px; margin: 50px auto; background: white; border-radius: 20px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
+
+        /* The part with the picture on the left */
+        .payment-left {
+          background: #eef2ff;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          padding: 40px;
+        }
+
+        .payment-left img {
+          max-width: 100%;
+          height: auto;
+          filter: drop-shadow(0 10px 15px rgba(0,0,0,0.1));
+        }
+
+        .payment-right { padding: 40px; }
+        .nav-pills .nav-link { color: #6c757d; border: 1px solid #dee2e6; margin-right: 10px; border-radius: 10px; transition: 0.3s; }
+        .nav-pills .nav-link.active { background-color: #007bff; color: white; border-color: #007bff; }
+
+        .form-control { border-radius: 8px; padding: 12px; margin-bottom: 15px; border: 1px solid #ced4da; }
+        .form-control:focus { box-shadow: none; border-color: #007bff; }
+
+        .btn-confirm { background-color: #17a2b8; color: white; width: 100%; padding: 14px; border-radius: 8px; font-weight: bold; border: none; transition: 0.3s; }
+        .btn-confirm:hover { background-color: #138496; transform: translateY(-2px); }
+
+        .order-total-badge { background: #d4edda; color: #155724; padding: 8px 20px; border-radius: 20px; font-weight: bold; display: inline-block; }
+    </style>
+</head>
+<body>
+
+<div class="container py-4">
+    <div class="payment-container row g-0">
+
+        <div class="col-md-5 payment-left d-none d-md-flex">
+            <img th:src="@{/img/payment-img.png}" class="img-fluid" alt="Payment Illustration">
+        </div>
+
+        <div class="col-md-7 payment-right">
+            <h3 class="mb-4 text-center fw-bold" style="font-family: 'Playfair Display', serif;">Order Payment</h3>
+
+            <ul class="nav nav-pills mb-4 justify-content-center" id="pills-tab" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="pills-card-tab" data-bs-toggle="pill" data-bs-target="#pills-card" type="button">
+                        <i class="fa fa-credit-card me-2"></i>Credit Card
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="pills-cod-tab" data-bs-toggle="pill" data-bs-target="#pills-cod" type="button">
+                        <i class="fa fa-truck me-2"></i>Cash On Delivery
+                    </button>
+                </li>
+            </ul>
+
+            <div class="tab-content" id="pills-tabContent">
+                <div class="tab-pane fade show active" id="pills-card">
+                    <form th:action="@{/confirm-payment}" method="post">
+                        <input type="hidden" name="paymentMethod" value="Credit Card">
+
+                        <label class="small fw-bold mb-1">Card Owner</label>
+                        <input type="text" name="cardOwner" class="form-control" placeholder="Card Owner Name" required>
+
+                        <label class="small fw-bold mb-1">Card Number</label>
+                        <div class="input-group mb-3">
+                            <input type="text" name="cardNumber" class="form-control mb-0" placeholder="Valid card number" required>
+                            <span class="input-group-text bg-white"><i class="fa fa-cc-visa text-primary"></i></span>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-8">
+                                <label class="small fw-bold mb-1">Expiration Date</label>
+                                <div class="d-flex gap-2">
+                                    <input type="text" class="form-control" placeholder="MM" maxlength="2" required>
+                                    <input type="text" class="form-control" placeholder="YYYY" maxlength="4" required>
+                                </div>
+                            </div>
+                            <div class="col-4">
+                                <label class="small fw-bold mb-1">CVV <i class="fa fa-question-circle text-muted"></i></label>
+                                <input type="password" class="form-control" placeholder="CVV" maxlength="3" required>
+                            </div>
+                        </div>
+
+                        <label class="small fw-bold mb-1">Delivery Address</label>
+                        <textarea name="address" class="form-control" rows="2" placeholder="Enter your full delivery address" required></textarea>
+
+                        <div class="mt-3 mb-4 text-center">
+                            <span class="order-total-badge">Order Total: Rs. [[${#numbers.formatDecimal(totalAmount, 0, 'COMMA', 2, 'POINT')}]]</span>
+                        </div>
+
+                        <button type="submit" class="btn-confirm">Confirm Payment</button>
+                    </form>
+                </div>
+
+                <div class="tab-pane fade" id="pills-cod">
+                    <form th:action="@{/confirm-payment}" method="post">
+                        <input type="hidden" name="paymentMethod" value="COD">
+
+                        <div class="alert alert-info border-0 small">
+                            <i class="fa fa-info-circle me-2"></i>Note: At the time of receiving your order, you need to make the full payment in cash.
+                        </div>
+
+                        <label class="small fw-bold mb-1">Delivery Address</label>
+                        <textarea name="address" class="form-control" rows="4" placeholder="Enter your full delivery address" required></textarea>
+
+                        <div class="mt-3 mb-4 text-center">
+                            <span class="order-total-badge">Order Total: Rs. [[${#numbers.formatDecimal(totalAmount, 0, 'COMMA', 2, 'POINT')}]]</span>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary w-100 py-3 fw-bold rounded-3">
+                            <i class="fa fa-check-circle me-2"></i>Confirm Order
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
