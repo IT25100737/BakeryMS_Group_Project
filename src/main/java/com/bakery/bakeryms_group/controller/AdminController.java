@@ -271,6 +271,22 @@ public class AdminController {
         return part.substring(part.indexOf(prefix) + prefix.length()).trim();
     }
 
+    // =================  (DELETE MESSAGE) =================
+    @GetMapping("/admin/delete-message/{index}")
+    public String deleteMessage(@PathVariable("index") int index, RedirectAttributes ra) {
+        try {
+            List<String> allMessages = messageService.getAllMessages();
+            if (index >= 0 && index < allMessages.size()) {
+                allMessages.remove(index);
+                messageService.rewriteMessageFile(allMessages);
+                ra.addFlashAttribute("message", "Message deleted successfully.");
+            }
+        } catch (Exception e) {
+            ra.addFlashAttribute("error", "Delete failed.");
+        }
+        return "redirect:/admin#contact-section";
+    }
+
 
 
 }
