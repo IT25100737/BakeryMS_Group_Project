@@ -1,6 +1,6 @@
-package com.bakery.service;
+package com.bakery.bakeryms_group.service;
 
-import com.bakery.model.User;
+import com.bakery.bakeryms_group.model.User;
 import org.springframework.stereotype.Service;
 import java.io.*;
 import java.util.ArrayList;

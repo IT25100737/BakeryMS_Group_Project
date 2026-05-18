@@ -1,12 +1,12 @@
 package com.bakery.bakeryms_group.controller;
 
-import com.bakery.model.User;
-import com.bakery.model.Order;
-import com.bakery.model.OrderItem;
-import com.bakery.model.Product;
-import com.bakery.service.UserService;
-import com.bakery.service.OrderService;
-import com.bakery.service.ProductService;
+import com.bakery.bakeryms_group .model.User;
+import com.bakery.bakeryms_group .model.Order;
+import com.bakery.bakeryms_group .model.OrderItem;
+import com.bakery.bakeryms_group .model.Product;
+import com.bakery.bakeryms_group .service.UserService;
+import com.bakery.bakeryms_group .service.OrderService;
+import com.bakery.bakeryms_group .service.ProductService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
