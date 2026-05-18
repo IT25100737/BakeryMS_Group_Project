@@ -1,0 +1,753 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <title>Baker - Admin Dashboard</title>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+
+    <!-- Bootstrap & Font Awesome -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.10.0/css/all.min.css" rel="stylesheet">
+
+    <style>
+        body { background-color: #f8f9fa; font-family: 'Roboto', sans-serif; scroll-behavior: smooth; }
+        .sidebar { height: 100vh; background: #2d2d2d; color: white; position: fixed; width: 250px; transition: 0.3s; z-index: 1000;}
+        .sidebar div h3 { color: #EAA636; }
+        .sidebar a { color: #adb5bd; text-decoration: none; padding: 15px 25px; display: block; border-bottom: 1px solid #3d3d3d; cursor: pointer; }
+        .sidebar a:hover { background: #3d3d3d; color: #EAA636; }
+        .sidebar a.active { color: #EAA636; border-left: 4px solid #EAA636; background: #3d3d3d; }
+        .content { margin-left: 250px; padding: 30px; }
+        .stat-card { border: none; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 25px;}
+        .product-img-preview { width: 50px; height: 50px; object-fit: cover; border-radius: 8px; border: 1px solid #ddd; }
+        .badge-category { background-color: #EAA636; color: white; font-weight: 500; border-radius: 5px; }
+        .badge-active { background-color: #198754; color: white; border-radius: 20px; }
+        .badge-inactive { background-color: #dc3545; color: white; border-radius: 20px; }
+
+        .admin-section { display: none; }
+        #dashboard-section { display: block; }
+
+        .search-box { width: 250px; border-radius: 5px; border: 1px solid #ddd; padding: 5px 10px; }
+        .btn-delete-user { background-color: #ff5e5e; color: white; border: none; border-radius: 50%; width: 32px; height: 32px; transition: 0.3s; }
+        .btn-delete-user:hover { background-color: #e04848; transform: scale(1.1); }
+
+        .status-new { background-color: #cfe2ff; color: #084298; }
+        .status-accepted { background-color: #fff3cd; color: #856404; }
+        .status-pending { background-color: #e2e3e5; color: #41464b; }
+        .status-done { background-color: #d1e7dd; color: #0f5132; }
+    </style>
+</head>
+<body>
+
+<div class="sidebar">
+    <div class="p-4 text-center">
+        <h3 class="m-0">Baker Admin</h3>
+    </div>
+    <a href="/admin#dashboard-section" onclick="showSection('dashboard-section', this)" class="nav-link-item active"><i class="fa fa-tachometer-alt me-2"></i> Dashboard</a>
+    <a href="/admin#user-section" onclick="showSection('user-section', this)" class="nav-link-item"><i class="fa fa-users me-2"></i> Manage Users</a>
+    <a href="/admin#product-section" onclick="showSection('product-section', this)" class="nav-link-item"><i class="fa fa-plus-circle me-2"></i> Add Product</a>
+    <a href="/admin#current-products" onclick="showSection('current-products', this)" class="nav-link-item"><i class="fa fa-bread-slice me-2"></i> View Products</a>
+    <a href="/admin#order-section" onclick="showSection('order-section', this)" class="nav-link-item"><i class="fa fa-shopping-cart me-2"></i> View Orders</a>
+    <a href="/admin#contact-section" onclick="showSection('contact-section', this)" class="nav-link-item">
+        <i class="fas fa-envelope me-2" style="width: 20px; text-align: center;"></i>
+        Messages
+    </a>
+    <a th:href="@{/}" class="mt-5 text-warning"><i class="fa fa-arrow-left me-2"></i> Back to Site</a>
+</div>
+
+<div class="content">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 id="section-title" class="fw-bold">Dashboard Overview</h2>
+        <div class="badge bg-dark p-2" th:text="${#dates.format(#dates.createNow(), 'EEEE, MMM dd, yyyy')}">Date</div>
+    </div>
+
+    <!-- Message Alert (Success/Error) -->
+    <div th:if="${message}" class="alert alert-success alert-dismissible fade show shadow-sm" role="alert">
+        <i class="fa fa-check-circle me-2"></i> <span th:text="${message}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    <div th:if="${error}" class="alert alert-danger alert-dismissible fade show shadow-sm" role="alert">
+        <i class="fa fa-exclamation-triangle me-2"></i> <span th:text="${error}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+
+    <!-- Dashboard Overview -->
+    <div id="dashboard-section" class="admin-section">
+        <div class="row g-4 mb-4">
+            <div class="col-md-3"> <div class="card stat-card p-4 bg-white h-100 shadow-sm border-0" style="border-radius: 20px;">
+                <div class="d-flex align-items-center">
+                    <div class="btn-lg-square bg-light rounded-circle me-3 p-3 text-center d-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
+                        <i class="fa fa-shopping-basket text-primary fa-2x"></i>
+                    </div>
+                    <div>
+                        <p class="mb-1 text-muted">Total Orders</p>
+                        <h3 class="mb-0 fw-bold" th:text="${orders != null ? orders.size() : 0}">0</h3>
+                    </div>
+                </div>
+            </div>
+            </div>
+
+            <div class="col-md-3">
+                <div class="card stat-card p-4 bg-white h-100 shadow-sm border-0" style="border-radius: 20px;">
+                    <div class="d-flex align-items-center">
+                        <div class="btn-lg-square bg-light rounded-circle me-3 p-3 text-center d-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
+                            <i class="fa fa-birthday-cake text-primary fa-2x"></i>
+                        </div>
+                        <div>
+                            <p class="mb-1 text-muted">Total Products</p>
+                            <h3 class="mb-0 fw-bold" th:text="${products != null ? products.size() : 0}">0</h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-3">
+                <div class="card stat-card p-4 bg-white h-100 shadow-sm border-0" style="border-radius: 20px;">
+                    <div class="d-flex align-items-center">
+                        <div class="btn-lg-square bg-light rounded-circle me-3 p-3 text-center d-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
+                            <i class="fa fa-users text-primary fa-2x"></i>
+                        </div>
+                        <div>
+                            <p class="mb-1 text-muted">Registered Users</p>
+                            <h3 class="mb-0 fw-bold" th:text="${users != null ? users.size() : 0}">0</h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-3">
+                <div class="card stat-card p-4 bg-white h-100 shadow-sm border-0" style="border-radius: 20px; border-left: 5px solid #ffc107 !important;">
+                    <div class="d-flex align-items-center">
+                        <div class="btn-lg-square bg-warning-light rounded-circle me-3 p-3 text-center d-flex align-items-center justify-content-center" style="width: 60px; height: 60px; background-color: #fff9db;">
+                            <i class="fa fa-envelope-open text-warning fa-2x"></i>
+                        </div>
+                        <div>
+                            <p class="mb-1 text-muted">Messages</p>
+                            <h3 class="mb-0 fw-bold" th:text="${messages != null ? messages.size() : 0}">0</h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Manage Users Section -->
+    <div id="user-section" class="admin-section card stat-card shadow-sm border-0" style="border-radius: 15px;">
+        <div class="card-body p-4">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h5 class="card-title mb-0 fw-bold text-dark">
+                    <i class="fa fa-users me-2 text-primary"></i>Registered User List
+                </h5>
+                <div class="d-flex align-items-center">
+                    <label class="me-2 small fw-bold text-muted">Search:</label>
+                    <input type="text" id="userSearchInput" onkeyup="searchUsers()" class="search-box form-control form-control-sm" style="width: 200px;" placeholder="Name or Username...">
+                </div>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-hover align-middle" id="userTable">
+                    <thead>
+                    <tr class="text-muted small text-uppercase border-bottom">
+                        <th class="py-3">SrNo</th>
+                        <th>Full Name</th>
+                        <th>Username</th>
+                        <th>Email</th>
+                        <th>Mobile</th>
+                        <th>Role</th>
+                        <th class="text-center">Action</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <!-- Thymeleaf Loop for Users -->
+                    <tr th:each="user, stat : ${users}" class="border-bottom">
+                        <td th:text="${stat.count}" class="text-muted">1</td>
+                        <td>
+                            <div class="fw-bold text-dark" th:text="${user.fullName}">Name</div>
+                        </td>
+                        <td th:text="${user.username}">Username</td>
+                        <td th:text="${user.email}" class="small">Email</td>
+                        <td th:text="${user.mobile}">Mobile</td>
+                        <td>
+                            <span th:class="${user.role == 'ADMIN' ? 'badge bg-dark px-2' : 'badge bg-secondary px-2'}"
+                                  th:text="${user.role}">USER</span>
+                        </td>
+                        <td class="text-center">
+                            <!-- Safe Delete using POST Form -->
+                            <form th:action="@{/admin/delete-user}" method="post"
+                                  onsubmit="return confirm('Are you sure you want to permanently delete this user?')" style="display: inline;">
+
+                                <!-- Send the username to the controller -->
+                                <input type="hidden" name="username" th:value="${user.username}">
+
+                                <button type="submit" class="btn-delete-user d-inline-flex align-items-center justify-content-center border-0"
+                                        style="background-color: #ff5e5e; color: white; border-radius: 50%; width: 32px; height: 32px; transition: 0.3s;">
+                                    <i class="fa fa-trash-alt" style="font-size: 0.8rem;"></i>
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Product -->
+    <div id="product-section" class="admin-section card stat-card">
+        <div class="card-body p-4">
+            <h5 class="card-title mb-4 text-primary fw-bold"><i class="fa fa-plus-circle me-2"></i>Add New Product</h5>
+            <form th:action="@{/admin/add-product}" method="post" enctype="multipart/form-data">
+                <div class="row g-4">
+                    <div class="col-md-12">
+                        <label class="form-label fw-bold">Product Name</label>
+                        <input type="text" name="name" class="form-control" placeholder="Enter Product Name" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">Main Category</label>
+                        <select name="category" class="form-select" required>
+                            <option value="Cakes">Cakes</option>
+                            <option value="Pastries">Pastries</option>
+                            <option value="Desserts">Desserts</option>
+                            <option value="Others">Others</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">Sub Category</label>
+                        <input type="text" name="subCategory" class="form-control" placeholder="e.g. Chocolate" required>
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label fw-bold">Description</label>
+                        <textarea name="description" class="form-control" rows="3"></textarea>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold">Price (Rs.)</label>
+                        <input type="number" step="0.01" name="price" class="form-control" required>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold">Quantity</label>
+                        <input type="number" name="quantity" class="form-control" required>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold">Image</label>
+                        <input type="file" name="imageFile" class="form-control" accept="image/*" required>
+                    </div>
+                    <div class="col-12 text-center border-top pt-4">
+                        <button type="submit" class="btn btn-primary px-5">Save Product</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- View Products -->
+    <div id="current-products" class="admin-section card stat-card">
+        <div class="card-body p-4">
+            <h5 class="card-title mb-4 fw-bold">Current Product List</h5>
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead>
+                    <tr>
+                        <th>Image</th>
+                        <th>Product Details</th>
+                        <th>Price</th>
+                        <th>Stock</th>
+                        <th>Status</th>
+                        <th class="text-center">Action</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="p : ${products}">
+                        <td><img th:src="@{'/img/' + ${p.image}}" class="product-img-preview shadow-sm"></td>
+                        <td>
+                            <div class="fw-bold" th:text="${p.name}">Name</div>
+                            <span class="badge badge-category" th:text="${p.category}"></span>
+                        </td>
+                        <td class="fw-bold text-primary">Rs. [[${p.price}]]</td>
+                        <td th:text="${p.quantity}">Qty</td>
+                        <td>
+                            <span th:class="${p.isActive ? 'badge badge-active' : 'badge badge-inactive'}"
+                                  th:text="${p.isActive ? 'Active' : 'Inactive'}"></span>
+                        </td>
+                        <td class="text-center">
+                            <button class="btn btn-sm btn-outline-warning border-0 me-2"
+                                    th:attr="onclick=|openEditModal('${p.name}', '${p.price}', '${p.category}', '${p.subCategory}', '${p.description}', '${p.quantity}', ${p.isActive}, '${p.image}')|">
+                                <i class="fa fa-edit"></i>
+                            </button>
+                            <a th:href="@{'/admin/delete-product/' + ${p.name}}" class="btn btn-sm btn-outline-danger border-0" onclick="return confirm('Delete this product?')">
+                                <i class="fa fa-trash"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- View Orders Section -->
+    <div id="order-section" class="admin-section card stat-card shadow-sm border-0" style="border-radius: 15px;">
+        <div class="card-body p-4">
+            <h5 class="card-title mb-4 fw-bold text-dark">Customer Orders</h5>
+            <div class="table-responsive">
+                <table class="table table-hover align-middle border-top" id="ordersTable">
+                    <thead class="bg-light" id="tableHeader">
+                    <tr>
+                        <th class="ps-3">Order ID</th>
+                        <th style="width: 30%;">Customer & Type</th>
+                        <th class="text-center">Status</th>
+                        <th class="text-center">Update</th>
+                        <th class="text-center">Action</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <th:block th:each="order, stat : ${orders}">
+                        <tr class="order-row" th:id="'mainRow' + ${stat.index}">
+                            <td class="ps-3 fw-bold text-primary" th:text="${order.orderId}">#0000</td>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <div class="me-3">
+                                        <div class="fw-bold mb-0 text-dark" th:text="${order.username}">User Name</div>
+                                        <span class="badge bg-light text-secondary border py-1" style="font-size: 0.7rem;" th:text="${order.type}">WEB ORDER</span>
+                                    </div>
+                                    <button class="btn btn-sm btn-light border rounded-circle shadow-sm"
+                                            type="button" th:onclick="'toggleOrderView(' + ${stat.index} + ')'">
+                                        <i class="fa fa-eye text-muted"></i>
+                                    </button>
+                                </div>
+                            </td>
+                            <td class="text-center">
+                                <span th:if="${order.status == 'New'}" class="badge bg-warning text-dark px-3 py-2">New</span>
+                                <span th:if="${order.status == 'Accepted'}" class="badge bg-primary px-3 py-2">Accepted</span>
+                                <span th:if="${order.status == 'Pending'}" class="badge bg-info px-3 py-2 text-white">Pending</span>
+                                <span th:if="${order.status == 'Done'}" class="badge bg-success px-3 py-2 text-white">Completed</span>
+                            </td>
+                            <td class="text-center">
+                                <form th:action="@{/admin/update-order-status}" method="post">
+                                    <input type="hidden" name="orderIndex" th:value="${order.index}">
+                                    <input type="hidden" name="currentStatus" th:value="${order.status}">
+                                    <button type="submit" class="btn btn-sm btn-dark px-3 fw-bold" th:if="${order.status == 'New'}">Accept</button>
+                                    <button type="submit" class="btn btn-sm btn-secondary px-3 fw-bold" th:if="${order.status == 'Accepted'}">Pending</button>
+                                    <button type="submit" class="btn btn-sm btn-info text-white px-3 fw-bold" th:if="${order.status == 'Pending'}">Done</button>
+                                    <span th:if="${order.status == 'Done'}" class="text-success small fw-bold">Finished</span>
+                                </form>
+                            </td>
+                            <td class="text-center">
+                                <a th:href="@{'/admin/delete-order-record/' + ${order.index}}" class="btn btn-sm btn-outline-danger border-0" onclick="return confirm('Are you sure you want to delete this order??')">
+                                    <i class="fa fa-trash"></i>
+                                </a>
+                            </td>
+                        </tr>
+
+                        <!-- (Isolated Detail Row) -->
+                        <tr class="detail-row d-none bg-white" th:id="'details' + ${stat.index}">
+                            <td colspan="5" class="p-4 border-0">
+                                <div class="card border-0 shadow-lg rounded-3" style="background: #fdfdfd;">
+                                    <div class="card-header bg-white border-0 pt-3 px-4 d-flex justify-content-between align-items-center">
+                                        <h5 class="fw-bold m-0 text-dark">Order Details View</h5>
+                                        <button class="btn btn-sm btn-outline-secondary rounded-pill" th:onclick="'toggleOrderView(' + ${stat.index} + ')'">
+                                            <i class="fa fa-times me-1"></i> Close & Back
+                                        </button>
+                                    </div>
+                                    <div class="card-body p-4">
+                                        <div class="row mb-4">
+                                            <div class="col-md-6">
+                                                <h6 class="fw-bold text-muted small text-uppercase">Order ID:</h6>
+                                                <p class="h5 fw-bold text-primary" th:text="${order.orderId}">#0000</p>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <h6 class="fw-bold text-muted small text-uppercase">Delivery Address:</h6>
+                                                <p class="mb-0 text-dark fw-semibold" th:text="${order.address}">No Address Found</p>
+                                            </div>
+                                        </div>
+
+                                        <!-- Web Order Details -->
+                                        <div th:if="${order.type == 'WEB ORDER'}">
+                                            <table class="table table-sm table-borderless align-middle">
+                                                <thead class="border-bottom small text-muted text-uppercase">
+                                                <tr>
+                                                    <th>Product Name</th>
+                                                    <th class="text-center">Price</th>
+                                                    <th class="text-center">Qty</th>
+                                                    <th class="text-end">Subtotal</th>
+                                                </tr>
+                                                </thead>
+                                                <tbody>
+                                                <tr th:each="item : ${order.parsedItems}" class="border-bottom-dashed">
+                                                    <td th:text="${item.name}" class="fw-bold py-3 text-dark">Cake Name</td>
+                                                    <td class="text-center" th:text="${'Rs. ' + item.price}">Rs. 0.0</td>
+                                                    <td class="text-center" th:text="${item.quantity}">1</td>
+                                                    <td class="text-end fw-bold text-dark"
+                                                        th:text="${'Rs. ' + (T(java.lang.Double).parseDouble(item.price) * T(java.lang.Integer).parseInt(item.quantity))}">
+                                                        Rs. 0.0
+                                                    </td>
+                                                </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+
+                                        <!-- Custom Cake View -->
+                                        <div th:if="${order.type == 'CUSTOM CAKE'}" class="row g-4">
+
+                                            <!-- 1. Custom Cake Image -->
+                                            <div class="col-md-5">
+                                                <div class="p-3 border rounded-4 bg-white shadow-sm text-center">
+                                                    <small class="text-muted d-block mb-2 fw-bold text-uppercase">Reference Image</small>
+                                                    <div th:if="${order.imageName != null and !order.imageName.empty}">
+                                                        <img th:src="@{'/img/custom_orders/' + ${order.imageName}}"
+                                                             class="img-fluid rounded-3 shadow-sm"
+                                                             style="max-height: 350px; width: 100%; object-fit: contain;"
+                                                             onerror="this.src='/img/default-cake.png'">
+                                                    </div>
+                                                    <div th:unless="${order.imageName != null and !order.imageName.empty}" class="py-5">
+                                                        <img src="/img/default-cake.png" class="img-fluid opacity-50" style="max-height: 150px;">
+                                                        <p class="text-muted mt-2">No reference image provided</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <!-- 2. Custom Cake Details -->
+                                            <div class="col-md-7">
+                                                <div class="card border-0 bg-light p-4 rounded-4 shadow-sm">
+                                                    <h5 class="fw-bold mb-3 border-bottom pb-2">Full Order Specifications</h5>
+                                                    <div class="row mb-3">
+                                                        <div class="col-6">
+                                                            <small class="text-muted d-block">Flavor:</small>
+                                                            <span class="fw-bold text-dark" th:text="${order.flavor}">Chocolate</span>
+                                                        </div>
+                                                        <div class="col-6">
+                                                            <small class="text-muted d-block">Cake Size:</small>
+                                                            <span class="badge bg-primary px-3" th:text="${order.size}">1 KG</span>
+                                                        </div>
+                                                    </div>
+
+                                                    <div class="mb-3 p-2 bg-white rounded border-start border-warning border-4">
+                                                        <small class="text-muted d-block">Greeting on Cake:</small>
+                                                        <span class="fw-bold h6" th:text="${order.greeting}">Happy Birthday</span>
+                                                    </div>
+
+                                                    <div class="mb-3">
+                                                        <small class="text-muted d-block">Special Description/Theme:</small>
+                                                        <p class="text-dark bg-white p-2 rounded border" style="min-height: 60px; white-space: pre-line;"
+                                                           th:text="${order.specialDescription != null ? order.specialDescription : 'No extra description.'}">
+                                                        </p>
+                                                    </div>
+
+                                                    <div class="row">
+                                                        <div class="col-6">
+                                                            <small class="text-muted d-block">Contact No:</small>
+                                                            <span class="fw-bold" th:text="${order.mobile}">07x xxxxxxx</span>
+                                                        </div>
+                                                        <div class="col-6">
+                                                            <small class="text-muted d-block">Delivery Date:</small>
+                                                            <span class="fw-bold text-danger" th:text="${order.deliveryDate}">2026-05-10</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+
+                                        <!-- Total amount -->
+                                        <div class="text-end mt-4 border-top pt-3">
+                                            <small class="text-muted text-uppercase d-block" style="font-size: 0.75rem; letter-spacing: 1px;">Grand Total</small>
+                                            <h3 class="fw-bold text-warning mb-0" th:text="${order.total}">Rs. 0.0</h3>
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                    </th:block>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Customer Messages Section -->
+    <div id="contact-section" class="admin-section card stat-card shadow-sm border-0" style="border-radius: 15px;">
+        <div class="card-body p-4">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h5 class="card-title mb-0 fw-bold text-dark"><i class="fa fa-envelope me-2 text-primary"></i>Customer Messages</h5>
+                <span class="badge bg-primary rounded-pill" th:text="${messages != null ? messages.size() : 0} + ' Messages'">0 Messages</span>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-hover align-middle border-top">
+                    <thead class="bg-light">
+                    <tr>
+                        <th class="ps-3">Date</th>
+                        <th>Customer Name</th>
+                        <th>Subject</th>
+                        <th>Message Preview</th>
+                        <th class="text-center">Action</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <!-- To show when there are no messages -->
+                    <tr th:if="${messages == null or messages.isEmpty()}">
+                        <td colspan="5" class="text-center py-5 text-muted">
+                            <i class="fa fa-comment-slash fa-3x mb-3 opacity-25"></i>
+                            <p>No messages received yet.</p>
+                        </td>
+                    </tr>
+
+                    <!-- Message list (Loop) -->
+                    <tr th:each="msg, stat : ${messages}">
+                        <td class="ps-3 small text-muted" th:text="${msg.date}">2026-05-03</td>
+                        <td>
+                            <div class="fw-bold text-dark" th:text="${msg.name}">Customer Name</div>
+                            <small class="text-primary" th:text="${msg.email}">customer@email.com</small>
+                        </td>
+                        <td>
+                            <span class="badge bg-light text-dark border" th:text="${msg.subject}">Subject</span>
+                        </td>
+                        <td style="max-width: 300px;">
+                            <p class="mb-0 text-truncate small text-secondary" th:text="${msg.message}">
+                                Message content goes here...
+                            </p>
+                        </td>
+                        <td class="text-center">
+                            <!-- View Button: To read the message in full -->
+                            <button class="btn btn-sm btn-outline-primary border-0 me-2"
+                                    th:attr="onclick=|viewFullMessage('${msg.name}', '${msg.email}', '${msg.subject}', '${msg.message}', '${msg.date}')|">
+                                <i class="fa fa-eye"></i>
+                            </button>
+                            <a th:href="@{'/admin/delete-message/' + ${stat.index}}"
+                               class="btn btn-sm btn-outline-danger border-0"
+                               onclick="return confirm('Are you sure you want to delete this message??')">
+                                <i class="fa fa-trash"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="messageViewModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 16px; overflow: hidden;">
+
+            <!-- Header: Professional Forest Green (Medium Shade) -->
+            <div class="modal-header border-0 py-3 px-4" style="background-color: #2e4d32;">
+                <h5 class="modal-title d-flex align-items-center fw-bold" style="color: #ffffff; font-size: 1.1rem;">
+                    <span class="me-3 d-flex align-items-center justify-content-center bg-white rounded-circle shadow-sm" style="width: 35px; height: 35px;">
+                        <i class="fas fa-envelope-open-text" style="color: #2e4d32; font-size: 0.9rem;"></i>
+                    </span>
+                    Message Details
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+
+            <div class="modal-body p-4 bg-white">
+                <!-- Sender Info: Clean Professional Look -->
+                <div class="d-flex align-items-center mb-4 p-3 rounded-3" style="background-color: #f1f3f5; border-left: 4px solid #2e4d32;">
+                    <div class="bg-white text-secondary rounded-circle d-flex align-items-center justify-content-center shadow-sm" style="width: 50px; height: 50px; min-width: 50px; border: 1px solid #dee2e6;">
+                        <i class="fas fa-user-alt fa-lg"></i>
+                    </div>
+                    <div class="ms-3">
+                        <label class="text-uppercase fw-bold mb-0" style="font-size: 0.65rem; color: #6c757d; letter-spacing: 0.5px;">Customer Identity</label>
+                        <h6 id="modal-msg-name" class="mb-0 fw-bold" style="color: #212529;"></h6>
+                        <small id="modal-msg-email" class="text-muted"></small>
+                    </div>
+                </div>
+
+                <!-- Subject: Professional Muted Label -->
+                <div class="mb-4">
+                    <label class="text-uppercase fw-bold mb-1" style="font-size: 0.65rem; color: #adb5bd; letter-spacing: 0.5px;">Inquiry Topic</label>
+                    <div id="modal-msg-subject" class="fw-bold text-dark border-bottom pb-1" style="font-size: 0.95rem;"></div>
+                </div>
+
+                <!-- Message Body: High Readability -->
+                <div class="mb-2">
+                    <label class="text-uppercase fw-bold mb-1" style="font-size: 0.65rem; color: #adb5bd; letter-spacing: 0.5px;">Message Details</label>
+                    <div class="p-3 rounded-3 bg-light" style="min-height: 120px; border: 1px solid #e9ecef;">
+                        <p id="modal-msg-body" class="mb-0" style="white-space: pre-line; line-height: 1.5; color: #343a40; font-size: 0.9rem;"></p>
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-end align-items-center mt-3 pt-2">
+                    <small class="text-muted" style="font-size: 0.75rem;">
+                        <i class="far fa-clock me-1"></i> <span id="modal-msg-date"></span>
+                    </small>
+                </div>
+            </div>
+
+            <div class="modal-footer border-0 py-3 px-4 bg-light">
+                <button type="button" class="btn btn-outline-secondary btn-sm px-4 rounded-pill fw-medium" data-bs-dismiss="modal">Close</button>
+                <a id="modal-msg-reply" href="#" class="btn btn-sm px-4 rounded-pill shadow-sm fw-bold text-white" style="background-color: #2e4d32; border: none;">
+                    <i class="fas fa-reply me-2"></i>Respond
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+    <!-- Edit Product Modal -->
+    <div class="modal fade" id="editProductModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content border-0 shadow">
+                <div class="modal-header bg-warning text-dark">
+                    <h5 class="modal-title fw-bold"><i class="fa fa-edit me-2"></i>Edit Product</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <!-- Backend (Controller)  /admin/update-product associated with -->
+                <form th:action="@{/admin/update-product}" method="post" enctype="multipart/form-data">
+                    <div class="modal-body p-4">
+                        <input type="hidden" name="name" id="edit-name">
+                        <input type="hidden" name="existingImage" id="edit-existingImage">
+
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Category</label>
+                                <select name="category" id="edit-category" class="form-select">
+                                    <option value="Cakes">Cakes</option>
+                                    <option value="Pastries">Pastries</option>
+                                    <option value="Desserts">Desserts</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Sub Category</label>
+                                <input type="text" name="subCategory" id="edit-subCategory" class="form-control" required>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label fw-bold">Price (Rs.)</label>
+                                <input type="number" step="0.01" name="price" id="edit-price" class="form-control" required>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label fw-bold">Quantity</label>
+                                <input type="number" name="quantity" id="edit-quantity" class="form-control" required>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label fw-bold">Change Image (Optional)</label>
+                                <input type="file" name="imageFile" class="form-control" accept="image/*">
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label fw-bold">Description</label>
+                                <textarea name="description" id="edit-description" class="form-control" rows="3"></textarea>
+                            </div>
+                            <div class="col-12">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" name="isActive" id="edit-isActive" value="true">
+                                    <label class="form-check-label fw-bold">Active Status (Visible on Site)</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer bg-light">
+                        <button type="submit" class="btn btn-warning fw-bold px-4">Update Changes</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        window.addEventListener('DOMContentLoaded', (event) => {
+            const hash = window.location.hash;
+            if (hash) {
+                const sectionId = hash.substring(1);
+                const targetLink = document.querySelector(`a[onclick*='${sectionId}']`);
+                showSection(sectionId, targetLink);
+            } else {
+                showSection('dashboard-section', document.querySelector('.nav-link-item.active'));
+            }
+        });
+
+        function showSection(sectionId, element) {
+            document.querySelectorAll('.admin-section').forEach(s => {
+                s.style.display = 'none';
+            });
+
+            const targetSection = document.getElementById(sectionId);
+            if (targetSection) {
+                targetSection.style.display = 'block';
+            }
+
+            document.querySelectorAll('.nav-link-item').forEach(link => {
+                link.classList.remove('active');
+            });
+
+            if (element) {
+                element.classList.add('active');
+            } else {
+                const autoLink = document.querySelector(`a[onclick*='${sectionId}']`);
+                if (autoLink) autoLink.classList.add('active');
+            }
+
+            const titles = {
+                'dashboard-section': 'Dashboard Overview',
+                'user-section': 'Manage Users',
+                'product-section': 'Add Product',
+                'current-products': 'View Products',
+                'order-section': 'Customer Orders',
+                'contact-section': 'Customer Messages'
+            };
+            document.getElementById('section-title').innerText = titles[sectionId] || 'Admin Panel';
+        }
+
+        //  User Search
+        function searchUsers() {
+            let filter = document.getElementById('userSearchInput').value.toLowerCase();
+            let rows = document.querySelectorAll('#userTable tbody tr');
+            rows.forEach(row => {
+                row.style.display = row.innerText.toLowerCase().includes(filter) ? "" : "none";
+            });
+        }
+
+        function toggleOrderView(index) {
+            const allRows = document.querySelectorAll('.order-row');
+            const allDetails = document.querySelectorAll('.detail-row');
+            const header = document.getElementById('tableHeader');
+            const targetDetail = document.getElementById('details' + index);
+            const targetMain = document.getElementById('mainRow' + index);
+
+            const isAlreadyOpen = !targetDetail.classList.contains('d-none');
+
+            if (isAlreadyOpen) {
+                allRows.forEach(row => row.classList.remove('d-none'));
+                allDetails.forEach(detail => detail.classList.add('d-none'));
+                header.classList.remove('d-none');
+            } else {
+                allRows.forEach(row => row.classList.add('d-none'));
+                allDetails.forEach(detail => detail.classList.add('d-none'));
+                targetMain.classList.remove('d-none');
+                targetDetail.classList.remove('d-none');
+                header.classList.add('d-none');
+            }
+        }
+
+        function openEditModal(name, price, category, subCategory, desc, qty, active, image) {
+            document.getElementById('edit-name').value = name;
+            document.getElementById('edit-price').value = price;
+            document.getElementById('edit-category').value = category;
+            document.getElementById('edit-subCategory').value = subCategory;
+            document.getElementById('edit-description').value = (desc === 'null' || desc === 'undefined') ? '' : desc;
+            document.getElementById('edit-quantity').value = qty;
+            document.getElementById('edit-isActive').checked = (active === true || active === 'true');
+            document.getElementById('edit-existingImage').value = image;
+
+            let editModal = new bootstrap.Modal(document.getElementById('editProductModal'));
+            editModal.show();
+        }
+
+        function viewFullMessage(name, email, subject, message, date) {
+            document.getElementById('modal-msg-name').innerText = name;
+            document.getElementById('modal-msg-email').innerText = email;
+            document.getElementById('modal-msg-subject').innerText = subject;
+            document.getElementById('modal-msg-body').innerText = message;
+            document.getElementById('modal-msg-date').innerText = "Received on: " + date;
+            document.getElementById('modal-msg-reply').href = "mailto:" + email + "?subject=Re: " + subject;
+
+            var myModal = new bootstrap.Modal(document.getElementById('messageViewModal'));
+            myModal.show();
+        }
+
+    </script>
+
+</body>
+</html>
