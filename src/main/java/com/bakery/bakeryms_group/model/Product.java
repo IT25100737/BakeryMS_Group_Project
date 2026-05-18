@@ -9,13 +9,11 @@ public class Product {
     private int quantity;
     private boolean isActive;
     private String image;
-    private double averageRating;
 
     public Product() {
     }
 
     public Product(String name, double price, String category, String subCategory,
-                   String description, int quantity, boolean isActive, String image,double averageRating) {
         this.name = name;
         this.price = price;
         this.category = category;
@@ -24,7 +22,6 @@ public class Product {
         this.quantity = quantity;
         this.isActive = isActive;
         this.image = image;
-        this.averageRating = averageRating;
     }
 
     // --- Getters  ---
@@ -79,7 +76,6 @@ public class Product {
                 ", subCategory='" + subCategory + '\'' +
                 ", quantity=" + quantity +
                 ", isActive=" + isActive +
-                ", averageRating=" + averageRating +
                 '}';
     }
 }

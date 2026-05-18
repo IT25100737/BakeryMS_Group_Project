@@ -37,9 +37,6 @@ public class AdminController {
     @Autowired
     private OrderService orderService;
 
-    @Autowired
-    private MessageService messageService;
-
 
     // =================  (ADMIN DASHBOARD) =================
     @GetMapping("/admin")
@@ -269,22 +266,6 @@ public class AdminController {
     private String extractValue(String part, String prefix) {
         if (part == null || !part.contains(prefix)) return "N/A";
         return part.substring(part.indexOf(prefix) + prefix.length()).trim();
-    }
-
-    // =================  (DELETE MESSAGE) =================
-    @GetMapping("/admin/delete-message/{index}")
-    public String deleteMessage(@PathVariable("index") int index, RedirectAttributes ra) {
-        try {
-            List<String> allMessages = messageService.getAllMessages();
-            if (index >= 0 && index < allMessages.size()) {
-                allMessages.remove(index);
-                messageService.rewriteMessageFile(allMessages);
-                ra.addFlashAttribute("message", "Message deleted successfully.");
-            }
-        } catch (Exception e) {
-            ra.addFlashAttribute("error", "Delete failed.");
-        }
-        return "redirect:/admin#contact-section";
     }
 
 
