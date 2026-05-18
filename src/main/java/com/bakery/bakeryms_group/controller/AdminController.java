@@ -1,41 +1,103 @@
 package com.bakery.bakeryms_group.controller;
 
-import com.bakery.model.User;
-import com.bakery.model.Product;
+import com.bakery.bakeryms_group.model.User;
+import com.bakery.bakeryms_group.model.Order;
+import com.bakery.bakeryms_group.model.OrderItem;
+import com.bakery.bakeryms_group.model.Product;
+import com.bakery.bakeryms_group.model.ContactMessage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
 import jakarta.servlet.http.HttpSession;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import com.bakery.service.ProductService;
-
-
-
-import com.bakery.model.Order;
-import com.bakery.model.OrderItem;
-import org.springframework.ui.Model;
 import java.util.ArrayList;
 import java.util.List;
-import com.bakery.service.OrderService;
-
-
+import com.bakery.bakeryms_group.service.UserService;
+import com.bakery.bakeryms_group.service.ProductService;
+import com.bakery.bakeryms_group.service.OrderService;
+import com.bakery.bakeryms_group.service.MessageService;
 
 @Controller
 public class AdminController {
 
     @Autowired
-    private ProductService productService;
+    private UserService userService;
 
+    @Autowired
+    private ProductService productService;
 
     @Autowired
     private OrderService orderService;
 
+
+    // =================  (ADMIN DASHBOARD) =================
+    @GetMapping("/admin")
+    public String showAdminDashboard(Model model, HttpSession session) {
+        User currentUser = (User) session.getAttribute("user");
+        if (currentUser == null || !"ADMIN".equalsIgnoreCase(currentUser.getRole())) {
+            return "redirect:/login";
+        }
+
+        List<User> allUsers = userService.getAllUsers();
+        List<Product> allProducts = productService.getAllProducts();
+        List<String> rawOrders = orderService.getAllOrders();
+
+        // Orders Parse
+        List<Order> parsedOrders = new ArrayList<>();
+        for (int i = 0; i < rawOrders.size(); i++) {
+            try {
+                Order o = parseOrderString(rawOrders.get(i));
+                if (o != null) {
+                    o.setIndex(i);
+                    parsedOrders.add(o);
+                }
+            } catch (Exception e) {
+                System.err.println("Error parsing admin order at index " + i + ": " + e.getMessage());
+            }
+        }
+
+        //  (Messages) Parse
+        List<String> rawMessages = messageService.getAllMessages();
+        List<ContactMessage> parsedMessages = new ArrayList<>();
+        for (int i = 0; i < rawMessages.size(); i++) {
+            String m = rawMessages.get(i);
+            String[] mParts = m.split(" \\| ");
+            if (mParts.length >= 5) {
+                ContactMessage msg = new ContactMessage(mParts[0], mParts[1], mParts[2], mParts[3], mParts[4]);
+                msg.setIndex(i);
+                parsedMessages.add(msg);
+            }
+        }
+
+        model.addAttribute("users", allUsers);
+        model.addAttribute("products", allProducts);
+        model.addAttribute("orders", parsedOrders);
+        model.addAttribute("messages", parsedMessages);
+
+        return "admin";
+    }
+
+    //===== DELETE USER ======
+    @PostMapping("/admin/delete-user")
+    public String deleteUser(@RequestParam("username") String username, RedirectAttributes redirectAttributes) {
+        try {
+            // Logic to delete the user from the database
+            userService.deleteUserByUsername(username);
+            redirectAttributes.addFlashAttribute("message", "User deleted successfully!");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", "Failed to delete user. Please try again.");
+        }
+        // Redirect back to the user section on the admin panel
+        return "redirect:/admin#user-section";
+    }
 
     // ======   ADD PRODUCT =======
 
@@ -99,8 +161,6 @@ public class AdminController {
         return "redirect:/admin#product-section";
     }
 
-
-
     //===== DELETE PRODUCT =====
     @GetMapping("/admin/delete-product/{name}")
     public String deleteProduct(@PathVariable String name, HttpSession session) {
@@ -110,6 +170,7 @@ public class AdminController {
         productService.deleteProduct(name);
         return "redirect:/admin";
     }
+
 
     // =================  (UPDATE STATUS) =================
     @PostMapping("/admin/update-order-status")
@@ -206,7 +267,6 @@ public class AdminController {
         if (part == null || !part.contains(prefix)) return "N/A";
         return part.substring(part.indexOf(prefix) + prefix.length()).trim();
     }
-
 
 
 
