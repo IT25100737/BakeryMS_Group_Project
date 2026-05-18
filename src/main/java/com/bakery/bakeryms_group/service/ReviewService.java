@@ -1,6 +1,6 @@
 package com.bakery.bakeryms_group.service;
 
-import com.bakery.model.ProductReview;
+import com.bakery.bakeryms_group.model.ProductReview;
 import org.springframework.stereotype.Service;
 import java.io.*;
 import java.time.LocalDate;

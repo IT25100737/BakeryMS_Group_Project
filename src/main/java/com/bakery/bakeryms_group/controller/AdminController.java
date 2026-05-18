@@ -37,6 +37,9 @@ public class AdminController {
     @Autowired
     private OrderService orderService;
 
+    @Autowired
+    private MessageService messageService;
+
 
     // =================  (ADMIN DASHBOARD) =================
     @GetMapping("/admin")

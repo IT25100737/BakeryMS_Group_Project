@@ -1,8 +1,8 @@
 package com.bakery.bakeryms_group.controller;
 
-import com.bakery.model.User;
-import com.bakery.model.ProductReview;
-import com.bakery.service.ReviewService;
+import com.bakery.bakeryms_group.model.User;
+import com.bakery.bakeryms_group.model.ProductReview;
+import com.bakery.bakeryms_group.service.ReviewService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PostMapping;
