@@ -1,13 +1,13 @@
 package com.bakery.bakeryms_group.controller;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
-import com.bakery.model.Product;
-import com.bakery.model.CartItem;
-import com.bakery.model.User;
-import com.bakery.service.ProductService;
-import com.bakery.service.OrderService;
-import com.bakery.service.MessageService;
+import com.bakery.bakeryms_group.model.Product;
+import com.bakery.bakeryms_group.model.CartItem;
+import com.bakery.bakeryms_group.model.User;
+import com.bakery.bakeryms_group.service.ProductService;
+import com.bakery.bakeryms_group.service.OrderService;
+import com.bakery.bakeryms_group.service.MessageService;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -30,6 +30,11 @@ public class OrderController {
 
     @Autowired
     private ProductService productService;
+
+    @Autowired
+    private MessageService messageService;
+
+    // --- Basic pages ---
 
     @GetMapping("/")
     public String showHomePage() {
@@ -60,6 +65,7 @@ public class OrderController {
     public String showCustomCakePage() {
         return "custom-cake";
     }
+
 
     // --- (Cart & Checkout) ---
 
@@ -204,5 +210,20 @@ public class OrderController {
         return "redirect:/profile";
     }
 
-
+    // =================  (CONTACT MESSAGE) =================
+    @PostMapping("/send-message")
+    public String sendMessage(@RequestParam String name,
+                              @RequestParam String email,
+                              @RequestParam String subject,
+                              @RequestParam String message,
+                              RedirectAttributes ra) {
+        try {
+            String raw = name + " | " + email + " | " + subject + " | " + message + " | " + LocalDate.now();
+            messageService.saveContactMessage(raw);
+            ra.addFlashAttribute("message", "Message sent successfully!");
+        } catch (Exception e) {
+            ra.addFlashAttribute("error", "The message could not be sent.");
+        }
+        return "redirect:/contact";
+    }
 }

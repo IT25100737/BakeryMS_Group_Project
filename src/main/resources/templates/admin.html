@@ -462,6 +462,127 @@
             </div>
         </div>
     </div>
+    <!-- Customer Messages Section -->
+    <div id="contact-section" class="admin-section card stat-card shadow-sm border-0" style="border-radius: 15px;">
+        <div class="card-body p-4">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h5 class="card-title mb-0 fw-bold text-dark"><i class="fa fa-envelope me-2 text-primary"></i>Customer Messages</h5>
+                <span class="badge bg-primary rounded-pill" th:text="${messages != null ? messages.size() : 0} + ' Messages'">0 Messages</span>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-hover align-middle border-top">
+                    <thead class="bg-light">
+                    <tr>
+                        <th class="ps-3">Date</th>
+                        <th>Customer Name</th>
+                        <th>Subject</th>
+                        <th>Message Preview</th>
+                        <th class="text-center">Action</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <!-- To show when there are no messages -->
+                    <tr th:if="${messages == null or messages.isEmpty()}">
+                        <td colspan="5" class="text-center py-5 text-muted">
+                            <i class="fa fa-comment-slash fa-3x mb-3 opacity-25"></i>
+                            <p>No messages received yet.</p>
+                        </td>
+                    </tr>
+
+                    <!-- Message list (Loop) -->
+                    <tr th:each="msg, stat : ${messages}">
+                        <td class="ps-3 small text-muted" th:text="${msg.date}">2026-05-03</td>
+                        <td>
+                            <div class="fw-bold text-dark" th:text="${msg.name}">Customer Name</div>
+                            <small class="text-primary" th:text="${msg.email}">customer@email.com</small>
+                        </td>
+                        <td>
+                            <span class="badge bg-light text-dark border" th:text="${msg.subject}">Subject</span>
+                        </td>
+                        <td style="max-width: 300px;">
+                            <p class="mb-0 text-truncate small text-secondary" th:text="${msg.message}">
+                                Message content goes here...
+                            </p>
+                        </td>
+                        <td class="text-center">
+                            <!-- View Button: To read the message in full -->
+                            <button class="btn btn-sm btn-outline-primary border-0 me-2"
+                                    th:attr="onclick=|viewFullMessage('${msg.name}', '${msg.email}', '${msg.subject}', '${msg.message}', '${msg.date}')|">
+                                <i class="fa fa-eye"></i>
+                            </button>
+                            <a th:href="@{'/admin/delete-message/' + ${stat.index}}"
+                               class="btn btn-sm btn-outline-danger border-0"
+                               onclick="return confirm('Are you sure you want to delete this message??')">
+                                <i class="fa fa-trash"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="messageViewModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 16px; overflow: hidden;">
+
+            <!-- Header: Professional Forest Green (Medium Shade) -->
+            <div class="modal-header border-0 py-3 px-4" style="background-color: #2e4d32;">
+                <h5 class="modal-title d-flex align-items-center fw-bold" style="color: #ffffff; font-size: 1.1rem;">
+                    <span class="me-3 d-flex align-items-center justify-content-center bg-white rounded-circle shadow-sm" style="width: 35px; height: 35px;">
+                        <i class="fas fa-envelope-open-text" style="color: #2e4d32; font-size: 0.9rem;"></i>
+                    </span>
+                    Message Details
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+
+            <div class="modal-body p-4 bg-white">
+                <!-- Sender Info: Clean Professional Look -->
+                <div class="d-flex align-items-center mb-4 p-3 rounded-3" style="background-color: #f1f3f5; border-left: 4px solid #2e4d32;">
+                    <div class="bg-white text-secondary rounded-circle d-flex align-items-center justify-content-center shadow-sm" style="width: 50px; height: 50px; min-width: 50px; border: 1px solid #dee2e6;">
+                        <i class="fas fa-user-alt fa-lg"></i>
+                    </div>
+                    <div class="ms-3">
+                        <label class="text-uppercase fw-bold mb-0" style="font-size: 0.65rem; color: #6c757d; letter-spacing: 0.5px;">Customer Identity</label>
+                        <h6 id="modal-msg-name" class="mb-0 fw-bold" style="color: #212529;"></h6>
+                        <small id="modal-msg-email" class="text-muted"></small>
+                    </div>
+                </div>
+
+                <!-- Subject: Professional Muted Label -->
+                <div class="mb-4">
+                    <label class="text-uppercase fw-bold mb-1" style="font-size: 0.65rem; color: #adb5bd; letter-spacing: 0.5px;">Inquiry Topic</label>
+                    <div id="modal-msg-subject" class="fw-bold text-dark border-bottom pb-1" style="font-size: 0.95rem;"></div>
+                </div>
+
+                <!-- Message Body: High Readability -->
+                <div class="mb-2">
+                    <label class="text-uppercase fw-bold mb-1" style="font-size: 0.65rem; color: #adb5bd; letter-spacing: 0.5px;">Message Details</label>
+                    <div class="p-3 rounded-3 bg-light" style="min-height: 120px; border: 1px solid #e9ecef;">
+                        <p id="modal-msg-body" class="mb-0" style="white-space: pre-line; line-height: 1.5; color: #343a40; font-size: 0.9rem;"></p>
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-end align-items-center mt-3 pt-2">
+                    <small class="text-muted" style="font-size: 0.75rem;">
+                        <i class="far fa-clock me-1"></i> <span id="modal-msg-date"></span>
+                    </small>
+                </div>
+            </div>
+
+            <div class="modal-footer border-0 py-3 px-4 bg-light">
+                <button type="button" class="btn btn-outline-secondary btn-sm px-4 rounded-pill fw-medium" data-bs-dismiss="modal">Close</button>
+                <a id="modal-msg-reply" href="#" class="btn btn-sm px-4 rounded-pill shadow-sm fw-bold text-white" style="background-color: #2e4d32; border: none;">
+                    <i class="fas fa-reply me-2"></i>Respond
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
 
     <!-- Edit Product Modal -->
     <div class="modal fade" id="editProductModal" tabindex="-1" aria-hidden="true">
