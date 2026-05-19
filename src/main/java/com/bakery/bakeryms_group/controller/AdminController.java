@@ -226,9 +226,8 @@ public class AdminController {
                 o.setMethod("Delivery/Pickup");
                 o.setTotal("Custom Quote");
 
-                // 🚨 ලූප් ලිය ලියා දඟලන්න ඕනේ නැහැ මල්ලී, අපේ extractValue එකෙන්ම නියමෙටම වැඩේ වෙනවා!
                 o.setCakeDesign(extractValue(parts[3], "Design:"));
-                o.setImageName(extractValue(parts[3], "Design:")); // HTML එකට ගැලපෙන්න දෙකටම සෙට් කරමු
+                o.setImageName(extractValue(parts[3], "Design:"));
 
                 o.setFlavor(extractValue(parts[4], "Flavor:"));
                 o.setSize(extractValue(parts[5], "Size:"));
