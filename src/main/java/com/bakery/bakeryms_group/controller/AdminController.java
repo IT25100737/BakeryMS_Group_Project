@@ -225,25 +225,25 @@ public class AdminController {
             if (orderType.equalsIgnoreCase("CUSTOM CAKE")) {
                 o.setMethod("Delivery/Pickup");
                 o.setTotal("Custom Quote");
-                for (String part : parts) {
-                    String p = part.trim();
-                    if (p.startsWith("Date:")) o.setDeliveryDate(p.replace("Date:", "").trim());
-                    if (p.startsWith("Flavor:")) o.setFlavor(p.replace("Flavor:", "").trim());
-                    if (p.startsWith("Size:")) o.setSize(p.replace("Size:", "").trim());
-                    if (p.startsWith("Greeting:")) o.setGreeting(p.replace("Greeting:", "").trim());
-                    if (p.startsWith("Contact:")) o.setMobile(p.replace("Contact:", "").trim());
-                    if (p.startsWith("Address:")) o.setAddress(p.replace("Address:", "").trim());
-                    if (p.startsWith("Desc:")) o.setSpecialDescription(p.replace("Desc:", "").trim());
-                    if (p.startsWith("Design:") || p.startsWith("Image:")) {
-                        String imgName = p.substring(p.indexOf(":") + 1).trim();
-                        o.setImageName(imgName);
-                        o.setCakeDesign(imgName);
-                    }
-                }
+
+                // 🚨 ලූප් ලිය ලියා දඟලන්න ඕනේ නැහැ මල්ලී, අපේ extractValue එකෙන්ම නියමෙටම වැඩේ වෙනවා!
+                o.setCakeDesign(extractValue(parts[3], "Design:"));
+                o.setImageName(extractValue(parts[3], "Design:")); // HTML එකට ගැලපෙන්න දෙකටම සෙට් කරමු
+
+                o.setFlavor(extractValue(parts[4], "Flavor:"));
+                o.setSize(extractValue(parts[5], "Size:"));
+                o.setGreeting(extractValue(parts[6], "Greeting:"));
+                o.setMobile(extractValue(parts[7], "Contact:"));
+                o.setDeliveryDate(extractValue(parts[8], "Date:"));
+                o.setAddress(extractValue(parts[9], "Address:"));
+                o.setSpecialDescription(extractValue(parts[10], "Desc:"));
+
             } else {
                 o.setMethod(extractValue(parts[3], "Method:"));
                 o.setAddress(extractValue(parts[4], "Address:"));
                 o.setTotal(extractValue(parts[6], "Total:"));
+                o.setDeliveryDate("N/A");
+                o.setMobile("N/A");
 
                 String rawItems = extractValue(parts[5], "Items:");
                 List<OrderItem> itemList = new ArrayList<>();
@@ -262,6 +262,8 @@ public class AdminController {
             }
             return o;
         } catch (Exception e) {
+            System.err.println("Error parsing order line: " + raw);
+            e.printStackTrace();
             return null;
         }
     }
